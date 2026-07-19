@@ -31,11 +31,18 @@ public final class DefaultSoils {
         soil("grass", "Grass", Blocks.GRASS);
         soil("sand", "Sand", Blocks.SAND);
         soil("gravel", "Gravel", Blocks.GRAVEL);
+        // Farmland has no item form, so it can't be a FuzzyStack — match it by block identity.
+        blockSoil("farmland", "Farmland", Blocks.FARMLAND);
     }
 
     private static void soil(String id, String name, Block block) {
         final FuzzyStack variant = new FuzzyStack(new ItemStack(block), true, false);
         AgriApi.getSoilRegistry().add(new CodeSoil(id, name, Collections.singletonList(variant)));
+        AgriCore.getLogger("agricrops").info("Registered fork-native soil: {0}", id);
+    }
+
+    private static void blockSoil(String id, String name, Block block) {
+        AgriApi.getSoilRegistry().add(new CodeSoil(id, name, Collections.emptyList(), Collections.singleton(block)));
         AgriCore.getLogger("agricrops").info("Registered fork-native soil: {0}", id);
     }
 
