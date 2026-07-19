@@ -2,9 +2,9 @@ package dev.omega24.agricrops.utility;
 
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.farming.PlantStats;
-import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.List;
 import java.util.Random;
 
@@ -32,15 +32,15 @@ public class WorldGenerationHelper {
     }
 
     public static IAgriStat getRandomStat(Random rand) {
-        return new PlantStats(
-                getRandomStatCode(rand),
-                getRandomStatCode(rand),
-                getRandomStatCode(rand)
-        );
+        IAgriStat stat = new PlantStats();
+        for (CropStat cropStat : CropStat.values()) {
+            stat = stat.with(cropStat, getRandomStatValue(rand));
+        }
+        return stat;
     }
 
-    public static int getRandomStatCode(Random rand) {
-        return rand.nextInt(AgriCraftConfig.cropStatCap) / 2 + 1;
+    public static int getRandomStatValue(Random rand) {
+        return rand.nextInt(CropStat.MAX) / 2 + 1;
     }
 
 }

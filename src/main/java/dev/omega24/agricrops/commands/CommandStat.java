@@ -9,11 +9,12 @@ import com.agricraft.agricore.util.MathHelper;
 import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.collect.ComparisonChain;
 import dev.omega24.agricrops.api.v1.AgriApi;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
-import dev.omega24.agricrops.reference.AgriCraftConfig;
 import dev.omega24.agricrops.utility.StackHelper;
 import com.infinityraider.infinitylib.utility.MessageUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +40,22 @@ public class CommandStat implements ICommand {
 
     @Override
     public String getUsage(ICommandSender ics) {
-        return "ac.stat <set|get> <growth|gain|strength|all> <value>";
+        return "ac.stat <set|get> <" + statIdList() + "|all> <value>";
+    }
+
+    private static String statIdList() {
+        final StringBuilder sb = new StringBuilder();
+        for (CropStat stat : CropStat.values()) {
+            if (sb.length() > 0) {
+                sb.append('|');
+            }
+            sb.append(stat.getId());
+        }
+        return sb.toString();
+    }
+
+    private static Optional<CropStat> findStat(String id) {
+        return Arrays.stream(CropStat.values()).filter(s -> s.getId().equals(id)).findFirst();
     }
 
     @Override
@@ -95,55 +111,34 @@ public class CommandStat implements ICommand {
     }
 
     private void setStat(@Nonnull EntityPlayer player, @Nonnull ItemStack stack, @Nonnull IAgriStat stat, @Nonnull String target, @Nonnull int value) throws CommandException {
-        switch (target) {
-            case "growth":
-                MessageUtil.messagePlayer(player, "Growth: {0} -> {1}", stat.getGrowth(), value);
-                stat.withGrowth(value);
-                break;
-            case "gain":
-                MessageUtil.messagePlayer(player, "Gain: {0} -> {1}", stat.getGain(), value);
-                stat.withGain(value);
-                break;
-            case "strength":
-                MessageUtil.messagePlayer(player, "Strength: {0} -> {1}", stat.getStrength(), value);
-                stat.withStrength(value);
-                break;
-            case "all":
-                MessageUtil.messagePlayer(player, "Growth: {0} -> {1}", stat.getGrowth(), value);
-                stat.withGrowth(value);
-                MessageUtil.messagePlayer(player, "Gain: {0} -> {1}", stat.getGain(), value);
-                stat.withGain(value);
-                MessageUtil.messagePlayer(player, "Strength: {0} -> {1}", stat.getStrength(), value);
-                stat.withStrength(value);
-                break;
-            default:
-                throw new CommandException("Invalid target: \"{0}\"!", target);
+        if (target.equals("all")) {
+            for (CropStat cropStat : CropStat.values()) {
+                MessageUtil.messagePlayer(player, "{0}: {1} -> {2}", cropStat.getId(), stat.get(cropStat), value);
+                stat = stat.with(cropStat, value);
+            }
+            return;
         }
+        final CropStat cropStat = findStat(target)
+                .orElseThrow(() -> new CommandException("Invalid target: \"{0}\"!", target));
+        MessageUtil.messagePlayer(player, "{0}: {1} -> {2}", cropStat.getId(), stat.get(cropStat), value);
+        stat.with(cropStat, value);
     }
 
     private void getStat(@Nonnull EntityPlayer player, @Nonnull ItemStack stack, @Nonnull IAgriStat stat, @Nonnull String target) throws CommandException {
-        switch (target) {
-            case "id":
-                MessageUtil.messagePlayer(player, "ID: {0}", stat.getId());
-                break;
-            case "growth":
-                MessageUtil.messagePlayer(player, "Growth: {0}", stat.getGrowth());
-                break;
-            case "gain":
-                MessageUtil.messagePlayer(player, "Gain: {0}", stat.getGrowth());
-                break;
-            case "strength":
-                MessageUtil.messagePlayer(player, "Strength: {0}", stat.getGrowth());
-                break;
-            case "all":
-                MessageUtil.messagePlayer(player, "ID: {0}", stat.getId());
-                MessageUtil.messagePlayer(player, "Growth: {0}", stat.getGrowth());
-                MessageUtil.messagePlayer(player, "Gain: {0}", stat.getGain());
-                MessageUtil.messagePlayer(player, "Strength: {0}", stat.getStrength());
-                break;
-            default:
-                throw new CommandException("Invalid target: \"%s\"!", target);
+        if (target.equals("id")) {
+            MessageUtil.messagePlayer(player, "ID: {0}", stat.getId());
+            return;
         }
+        if (target.equals("all")) {
+            MessageUtil.messagePlayer(player, "ID: {0}", stat.getId());
+            for (CropStat cropStat : CropStat.values()) {
+                MessageUtil.messagePlayer(player, "{0}: {1}", cropStat.getId(), stat.get(cropStat));
+            }
+            return;
+        }
+        final CropStat cropStat = findStat(target)
+                .orElseThrow(() -> new CommandException("Invalid target: \"%s\"!", target));
+        MessageUtil.messagePlayer(player, "{0}: {1}", cropStat.getId(), stat.get(cropStat));
     }
 
     @Override
@@ -166,15 +161,15 @@ public class CommandStat implements ICommand {
                 completions.add("get");
                 break;
             case 2:
-                completions.add("growth");
-                completions.add("gain");
-                completions.add("strength");
+                for (CropStat stat : CropStat.values()) {
+                    completions.add(stat.getId());
+                }
                 completions.add("all");
                 break;
             case 3:
                 if (arguments[0].trim().toLowerCase().equals("set")) {
-                    completions.add(String.valueOf(0));
-                    completions.add(String.valueOf(AgriCraftConfig.cropStatCap));
+                    completions.add(String.valueOf(CropStat.MIN));
+                    completions.add(String.valueOf(CropStat.MAX));
                 }
                 break;
         }

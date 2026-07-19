@@ -5,139 +5,76 @@ import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import dev.omega24.agricrops.farming.PlantStats;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAdapter<IAgriStatCalculator> {
 
     @Override
     public IAgriStat calculateSpreadStats(IAgriPlant child, Collection<IAgriCrop> parents) {
-        // Validate parameters.
         Objects.requireNonNull(child, "The child plant to calculate the stats for must not be null!");
         Objects.requireNonNull(parents, "The set of parents to calculate the child's stats from must not be null!");
-
-        // Variables
-        int invalidParents = 0;
-        int validParents = 0;
-        int growth = 0;
-        int gain = 0;
-        int strength = 0;
-
-        // Sum values
-        for (IAgriCrop parent : parents) {
-            // Skip parent if null.
-            if (parent == null) {
-                continue;
-            }
-
-            // Fetch the seed associated with the parent.
-            final AgriSeed parentSeed = parent.getSeed();
-
-            // Skip if parent seed is null.
-            if (parentSeed == null) {
-                continue;
-            }
-
-            // If the parent is not mature, counts as invalid parent.
-            if (!parent.isMature()) {
-                invalidParents++;
-                continue;
-            }
-
-            // If the parent plant does not match the child plant, invalid parent.
-            if (!Objects.equals(child, parentSeed.getPlant())) {
-                invalidParents++;
-                continue;
-            }
-
-            // Otherwise everything is aok.
-            validParents++;
-            growth += parentSeed.getStat().getGrowth();
-            gain += parentSeed.getStat().getGain();
-            strength += parentSeed.getStat().getStrength();
-        }
-
-        // Determine the stat divisor.
-        final int meanDivisor = calculateStatMeanDivisor(validParents, invalidParents);
-
-        // Perform averages.
-        growth = growth / meanDivisor;
-        gain = gain / meanDivisor;
-        strength = strength / meanDivisor;
-
-        // Return the new plant stat.
-        return new PlantStats(
-                calculateStat(growth, validParents, 1),
-                calculateStat(gain, validParents, 1),
-                calculateStat(strength, validParents, 1)
-        );
+        return blend(parents, parentPlant -> Objects.equals(child, parentPlant), 1);
     }
 
     @Override
     public IAgriStat calculateMutationStats(IAgriMutation mutation, Collection<IAgriCrop> parents) {
-        // Validate parameters.
         Objects.requireNonNull(mutation, "The mutation to calculate the stats for must not be null!");
         Objects.requireNonNull(parents, "The set of parents to calculate the mutation result stats from must not be null!");
+        return blend(parents, mutation::hasParent, AgriCraftConfig.cropStatDivisor);
+    }
 
-        // Variables
+    /**
+     * Sums every stat across valid parents, averages, then hands each average through
+     * {@link #calculateStat(int, int, int)} independently — same shape as the old
+     * growth/gain/strength blend, just generalized over the full {@link CropStat} set.
+     */
+    private IAgriStat blend(Collection<IAgriCrop> parents, Predicate<IAgriPlant> isValidParentPlant, int divisor) {
         int invalidParents = 0;
         int validParents = 0;
-        int growth = 0;
-        int gain = 0;
-        int strength = 0;
+        final Map<CropStat, Integer> sums = new EnumMap<>(CropStat.class);
+        for (CropStat stat : CropStat.values()) {
+            sums.put(stat, 0);
+        }
 
-        // Sum values
         for (IAgriCrop parent : parents) {
-            // Skip parent if null.
             if (parent == null) {
                 continue;
             }
-
-            // Fetch the seed associated with the parent.
             final AgriSeed parentSeed = parent.getSeed();
-
-            // Skip if parent seed is null.
             if (parentSeed == null) {
                 continue;
             }
-
-            // If the parent is not mature, counts as invalid parent.
             if (!parent.isMature()) {
                 invalidParents++;
                 continue;
             }
-
-            // If the parent plant does not match the child plant, invalid parent.
-            if (!mutation.hasParent(parentSeed.getPlant())) {
+            if (!isValidParentPlant.test(parentSeed.getPlant())) {
                 invalidParents++;
                 continue;
             }
-
-            // Otherwise everything is aok.
             validParents++;
-            growth += parentSeed.getStat().getGrowth();
-            gain += parentSeed.getStat().getGain();
-            strength += parentSeed.getStat().getStrength();
+            for (CropStat stat : CropStat.values()) {
+                sums.merge(stat, (int) parentSeed.getStat().get(stat), Integer::sum);
+            }
         }
 
-        // Determine the stat divisor.
         final int meanDivisor = calculateStatMeanDivisor(validParents, invalidParents);
 
-        // Perform averages.
-        growth = growth / meanDivisor;
-        gain = gain / meanDivisor;
-        strength = strength / meanDivisor;
-
-        // Return the new plant stat.
-        return new PlantStats(
-                calculateStat(growth, validParents, AgriCraftConfig.cropStatDivisor),
-                calculateStat(gain, validParents, AgriCraftConfig.cropStatDivisor),
-                calculateStat(strength, validParents, AgriCraftConfig.cropStatDivisor)
-        );
+        IAgriStat result = new PlantStats();
+        for (CropStat stat : CropStat.values()) {
+            final int mean = sums.get(stat) / meanDivisor;
+            result = result.with(stat, calculateStat(mean, validParents, divisor));
+        }
+        return result;
     }
 
     /**

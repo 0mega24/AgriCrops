@@ -5,6 +5,7 @@ import com.agricraft.agricore.util.TypeHelper;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.init.AgriItems;
 import dev.omega24.agricrops.reference.AgriNBT;
 import dev.omega24.agricrops.reference.Constants;
@@ -75,7 +76,7 @@ public class ItemClipping extends ItemBase implements IAutoRenderedItem {
         }
 
         // Destroy the seed if needed.
-        if (world.rand.nextInt(10) > seed.getStat().getStrength()) {
+        if (world.rand.nextInt(10) > Math.max(0, seed.getStat().get(CropStat.RESILIENCE))) {
             // Message the player as to explain.
             MessageUtil.messagePlayer(player, "`7The clipping did not take...`r");
             // Decrease the stack size.

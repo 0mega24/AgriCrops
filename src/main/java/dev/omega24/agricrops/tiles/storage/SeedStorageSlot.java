@@ -2,8 +2,9 @@ package dev.omega24.agricrops.tiles.storage;
 
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.stat.IAgriStat;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.reference.AgriNBT;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import net.minecraft.item.ItemStack;
@@ -32,7 +33,11 @@ public class SeedStorageSlot {
     }
 
     private int getTotalStat() {
-        return this.seed.getStat().getGrowth() + this.seed.getStat().getGain() + this.seed.getStat().getStrength();
+        int total = 0;
+        for (CropStat stat : CropStat.values()) {
+            total += this.seed.getStat().get(stat);
+        }
+        return total;
     }
 
     public int getId() {
@@ -62,30 +67,18 @@ public class SeedStorageSlot {
      */
     public static class SlotComparator implements Comparator<SeedStorageSlot> {
 
-        private final String stat;
+        private final CropStat stat;
 
-        public SlotComparator(String stat) {
-            this.stat = stat;
+        public SlotComparator(String statId) {
+            this.stat = Arrays.stream(CropStat.values())
+                    .filter(s -> s.getId().equals(statId))
+                    .findFirst()
+                    .orElse(CropStat.GROWTH);
         }
 
         @Override
         public int compare(SeedStorageSlot o1, SeedStorageSlot o2) {
-
-            final IAgriStat s1 = o1.getSeed().getStat();
-            final IAgriStat s2 = o2.getSeed().getStat();
-
-            final int[] a1 = new int[]{s1.getGain(), s1.getGrowth(), s1.getStrength()};
-            final int[] a2 = new int[]{s2.getGain(), s2.getGrowth(), s2.getStrength()};
-
-            for (int i = 0; i < 3; i++) {
-                if (a1[i] < a2[i]) {
-                    return -1;
-                } else if (a1[i] > a2[i]) {
-                    return 1;
-                }
-            }
-
-            return 0;
+            return Integer.compare(o1.getSeed().getStat().get(this.stat), o2.getSeed().getStat().get(this.stat));
         }
     }
 }

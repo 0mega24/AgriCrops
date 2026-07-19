@@ -66,9 +66,7 @@ public class ItemAgriSeed extends ItemBase implements IAgriAdapter<AgriSeed>, IA
     public List<String> getIgnoredNBT() {
         List<String> tags = super.getIgnoredNBT();
         tags.add(PlantStats.NBT_ANALYZED);
-        tags.add(PlantStats.NBT_GROWTH);
-        tags.add(PlantStats.NBT_GAIN);
-        tags.add(PlantStats.NBT_STRENGTH);
+        tags.add(PlantStats.NBT_STATS);
         return tags;
     }
 

@@ -3,6 +3,7 @@ package dev.omega24.agricrops.gui.storage;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.container.ContainerSeedStorageBase;
 import dev.omega24.agricrops.gui.AgriGuiWrapper;
@@ -197,10 +198,14 @@ public abstract class GuiSeedStorageBase extends ComponentGui<ContainerSeedStora
                 //draw the stat bars
                 Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
                 GL11.glDisable(GL11.GL_LIGHTING);
-                // Unpack Stats
-                short growth = element.getStat().getGrowth();
-                short gain = element.getStat().getGain();
-                short strength = element.getStat().getStrength();
+                // Unpack Stats. Only the three stats CropStatCalculator currently consumes
+                // (growth/yield/resilience) are shown — the bar strip only has room for three,
+                // and the other five don't drive any gameplay yet (soil/biome milestones).
+                // Clamped to a non-negative pixel height: the genome now allows negative rolls
+                // (a below-baseline stat), which this fixed-size bar texture can't represent.
+                short growth = barHeight(element.getStat().get(CropStat.GROWTH));
+                short gain = barHeight(element.getStat().get(CropStat.YIELD));
+                short strength = barHeight(element.getStat().get(CropStat.RESILIENCE));
                 // Write Stats
                 wrapper.drawTexturedModalRect(xOffset + (i * 16) + 1, yOffset - growth, 0, textureSize - growth, 3, growth);
                 wrapper.drawTexturedModalRect(xOffset + i * 16 + 6, yOffset - gain, 0, textureSize - gain, 3, gain);
@@ -208,6 +213,10 @@ public abstract class GuiSeedStorageBase extends ComponentGui<ContainerSeedStora
                 GL11.glEnable(GL11.GL_LIGHTING);
             }
         }
+    }
+
+    private static short barHeight(int statValue) {
+        return (short) Math.max(0, Math.min(16, statValue));
     }
 
     protected void drawScrollBarHorizontal(AgriGuiWrapper wrapper, ResourceLocation texture) {

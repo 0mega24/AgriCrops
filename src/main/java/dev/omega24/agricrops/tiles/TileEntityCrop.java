@@ -11,8 +11,10 @@ import dev.omega24.agricrops.api.v1.misc.IAgriDisplayable;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.MethodResult;
+import dev.omega24.agricrops.farming.CropStatCalculator;
 import dev.omega24.agricrops.farming.PlantStats;
 import dev.omega24.agricrops.init.AgriItems;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
@@ -67,7 +69,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         } else if (this.isMature()) {
             this.spread();
             return MethodResult.SUCCESS;
-        } else if ((this.seed.getPlant().getGrowthChanceBase() + this.seed.getStat().getGrowth() * this.seed.getPlant().getGrowthChanceBonus()) * AgriCraftConfig.growthMultiplier > this.getRandom().nextDouble()) {
+        } else if (CropStatCalculator.growthTickChance(this.seed.getPlant(), this.seed.getStat()) > this.getRandom().nextDouble()) {
             this.applyGrowthTick();
             return MethodResult.SUCCESS;
         }
@@ -185,7 +187,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
                 consumer.accept(this.getSeed().toStack());
             }
             if (includeProducts && this.isMature()) {
-                for (int trials = (this.seed.getStat().getGain() + 3) / 3; trials > 0; trials--) {
+                for (int trials = CropStatCalculator.harvestTrials(this.seed.getStat()); trials > 0; trials--) {
                     this.seed.getPlant().getHarvestProducts(consumer, this, this.seed.getStat(), this.getRandom());
                 }
             }
@@ -430,7 +432,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
 
     public static boolean canOvertake(@Nonnull AgriSeed overtaker, @Nonnull AgriSeed victim, @Nonnull Random rand) {
         return overtaker.getPlant().isAggressive()
-                && victim.getStat().getStrength() < overtaker.getStat().getStrength() * rand.nextDouble();
+                && CropStatCalculator.overtakes(overtaker.getStat(), victim.getStat(), rand);
     }
 
     // =========================================================================
@@ -612,9 +614,9 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             consumer.accept(" - Stage: " + this.getGrowthStage());
             consumer.accept(" - Stages: " + plant.getGrowthStages());
             consumer.accept(" - Meta: " + this.getGrowthStage());
-            consumer.accept(" - Growth: " + stat.getGrowth());
-            consumer.accept(" - Gain: " + stat.getGain());
-            consumer.accept(" - Strength: " + stat.getStrength());
+            for (CropStat cropStat : CropStat.values()) {
+                consumer.accept(" - " + cropStat.getId() + ": " + stat.get(cropStat));
+            }
             consumer.accept(" - Fertile: " + this.isFertile());
             consumer.accept(" - Mature: " + this.isMature());
             consumer.accept(" - AgriSoil: " + plant.getGrowthRequirement().getSoils().stream()

@@ -1,6 +1,7 @@
 package dev.omega24.agricrops.farming.mutation.statcalculator;
 
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
+import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class StatCalculatorHardcore extends StatCalculatorBase {
             neighbours = 2;
         }
         int newStat = getAction(neighbours).apply(input) / divisor;
-        return Math.max(1, Math.min(newStat, AgriCraftConfig.cropStatCap));
+        return CropStat.clamp(newStat);
     }
 
     private Action getAction(int count) {

@@ -6,9 +6,12 @@ import javax.annotation.Nullable;
 import net.minecraft.nbt.NBTTagCompound;
 
 /**
- * Interface for representing stats. Stats are immutable objects, to aid in overall safety.
+ * Interface for representing a plant's stat genome (crop-mod-design.md §2). Stats are immutable
+ * objects, to aid in overall safety.
  *
- *
+ * <p>Replaces the old flat growth/gain/strength model with a keyed lookup over the widened
+ * {@link CropStat} set, each stored as a signed byte in {@link CropStat#MIN}..{@link
+ * CropStat#MAX}.
  */
 public interface IAgriStat {
 
@@ -30,55 +33,13 @@ public interface IAgriStat {
     boolean isAnalyzed();
 
     /**
-     * Fetches the growth value associated with this instance.
-     * <p>
-     * The returned value should <em>always</em> be less than the value returned by
-     * {@link #getMaxGrowth()}.
+     * Fetches the value of the given stat associated with this instance, always in
+     * {@link CropStat#MIN}..{@link CropStat#MAX}.
      *
-     * @return The growth value of the seed.
+     * @param stat the stat to fetch.
+     * @return the value of that stat for this genome.
      */
-    byte getGrowth();
-
-    /**
-     * Fetches the gain value associated with this instance.
-     * <p>
-     * The returned value should <em>always</em> be less than the value returned by
-     * {@link #getMaxGain()}.
-     *
-     * @return The gain value of the seed.
-     */
-    byte getGain();
-
-    /**
-     * Fetches the strength value associated with this instance.
-     * <p>
-     * The returned value should <em>always</em> be less than the value returned by
-     * {@link #getMaxStrength()}.
-     *
-     * @return The strength value of the seed.
-     */
-    byte getStrength();
-
-    /**
-     * Fetches the maximum valid growth value for a stat of this type.
-     *
-     * @return The maximum growth value a seed of this kind can have.
-     */
-    byte getMaxGrowth();
-
-    /**
-     * Fetches the maximum valid gain value for a stat of this type.
-     *
-     * @return The maximum gain value a seed of this kind can have.
-     */
-    byte getMaxGain();
-
-    /**
-     * Fetches the maximum valid strength value for a stat of this type.
-     *
-     * @return The maximum strength value a seed of this kind can have.
-     */
-    byte getMaxStrength();
+    byte get(@Nonnull CropStat stat);
 
     /**
      * Sets the analyzed parameter.
@@ -90,31 +51,15 @@ public interface IAgriStat {
     IAgriStat withAnalyzed(boolean analyzed);
 
     /**
-     * Sets the growth stat.
+     * Sets the given stat to the given value (clamped to {@link CropStat#MIN}..{@link
+     * CropStat#MAX}).
      *
-     * @param growth
+     * @param stat the stat to set.
+     * @param value the new value for that stat.
      * @return the new stat.
      */
     @Nonnull
-    IAgriStat withGrowth(int growth);
-
-    /**
-     * Sets the gain stat.
-     *
-     * @param gain
-     * @return the new stat.
-     */
-    @Nonnull
-    IAgriStat withGain(int gain);
-
-    /**
-     * Sets the strength stat.
-     *
-     * @param strength
-     * @return the new stat.
-     */
-    @Nonnull
-    IAgriStat withStrength(int strength);
+    IAgriStat with(@Nonnull CropStat stat, int value);
 
     /**
      * Writes the stat to an NBTTagcompound. Make sure to set the stat id value when implementing

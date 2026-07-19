@@ -112,7 +112,7 @@ public interface IAgriPlant extends IAgriRegisterable {
     /**
      * Retrieves the base growth chance of the given plant. The growth bonus (from
      * {@link #getGrowthChanceBonus()}) is then multiplied by the plant's growth stat (from
-     * {@link IAgriStat#getGrowth()}) and added to this value as to get the actual growth chance of
+     * {@code CropStat.GROWTH}) and added to this value as to get the actual growth chance of
      * the plant.
      *
      * @return The base growth chance of the plant.
@@ -122,7 +122,7 @@ public interface IAgriPlant extends IAgriRegisterable {
     /**
      * Retrieves the growth bonus, or the added p-value for the plant to grow per growth stat level.
      * The growth bonus is multiplied by the plant's growth stat (from
-     * {@link IAgriStat#getGrowth()}) and added to the plant's base growth chance (from
+     * {@code CropStat.GROWTH}) and added to the plant's base growth chance (from
      * {@link #getGrowthChanceBase()}) as to get the actual growth chance of the plant.
      *
      * @return The growth bonus of the plant.
