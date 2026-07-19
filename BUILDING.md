@@ -48,17 +48,23 @@ the QuikMod plugin + `http://` mavens that no longer exist):
   plain literal values (mod id `agricrops`, package `dev.omega24.agricrops`, version
   `0.1.0`) instead of `${mod.x}` / `/*^...^*/` templates.
 
-## Status / remaining work to a green build
+## Status
 
-The migration scaffolding is in place, but a fully green `./gradlew build` still
-needs verification and likely iteration:
+`./gradlew build` is **green** — it produces `build/libs/agricrops-0.1.0.jar` (the
+reobfuscated mod jar) and `agricrops-0.1.0-dev.jar`. Verified with Temurin JDK 8.
 
-- **Verify the mod-integration dependency coordinates** in `build.gradle` (Botania,
-  Actually Additions, The One Probe, EnderIO — marked `TODO(build-green)`). They're
-  carried over from the original AgriCraft build; if any doesn't resolve from GTNH
-  Nexus, swap it for a CurseMaven `curse.maven:slug-projectId:fileId`. InfinityLib,
-  OpenComputers, Baubles, and JEI already have concrete ids.
-- **First build run** hasn't been executed in this environment (no Java 8 was
-  available where the migration was scaffolded), so treat the initial `./gradlew
-  build` as the shakeout — expect to resolve a few dependency coordinates and
-  possibly minor AgriCore/`org.reflections` classpath issues.
+Getting there needed three fixes beyond the scaffold (all committed):
+
+1. **Mappings**: RFG defaults to `stable_39`, but the source was written against
+   `snapshot_20180710` (set in the `minecraft {}` block). The wrong mappings rename
+   methods (`createIcon`/`getUnlocalizedName`/...) and broke `@Override` across ~34
+   files.
+2. **Dependency coordinates**: Actually Additions / The One Probe / EnderIO now come
+   from CurseMaven by file id (the original GAVs weren't on the live mavens).
+3. **Two upstream latent bugs**: `scala.actors.threadpool.Arrays` imports (only
+   compiled before because OpenComputers dragged Scala onto the classpath) → swapped
+   to `java.util.Arrays`; and a missing `AgriCommands` import in `IProxy.java` that
+   was already broken in upstream's tip commit `d889388a`.
+
+`runClient` has not been launched yet (needs the `shell.nix` FHS natives) — that's
+the next checkpoint (getting-started §4).

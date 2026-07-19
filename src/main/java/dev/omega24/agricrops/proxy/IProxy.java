@@ -5,6 +5,7 @@ import dev.omega24.agricrops.AgriCraft;
 import dev.omega24.agricrops.core.CoreHandler;
 import dev.omega24.agricrops.handler.GuiHandler;
 import dev.omega24.agricrops.impl.v1.PluginHandler;
+import dev.omega24.agricrops.init.AgriCommands;
 import dev.omega24.agricrops.init.AgriOreDict;
 import dev.omega24.agricrops.utility.CustomWoodTypeRegistry;
 import dev.omega24.agricrops.world.WorldGen;
