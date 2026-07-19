@@ -111,8 +111,12 @@ public final class CoreHandler {
                 .map(JsonSoil::new)
                 .forEach(AgriApi.getSoilRegistry()::add);
 
+        // Fork-native base soils in code (until the data-driven soil registry, design §3).
+        DefaultSoils.register();
+
         // Display Soils
-        AgriCore.getLogger("agricrops").info("Registered Soils ({0}/{1}):", count, raw);
+        AgriCore.getLogger("agricrops").info("Registered Soils ({0} total; {1}/{2} valid from JSON):",
+                AgriApi.getSoilRegistry().all().size(), count, raw);
         for (IAgriSoil soil : AgriApi.getSoilRegistry().all()) {
             AgriCore.getLogger("agricrops").info(" - {0}", soil.getName());
         }
