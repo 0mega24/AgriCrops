@@ -39,20 +39,12 @@ item.agricrops:nugget_unknown.name=Neznámý fragment
 // ========================================
 tile.agricrops:crops.name=Korigující tyčky
 tile.agricrops:seed_analyzer.name=Analyzér semínek
-tile.agricrops:water_pad.name=Vodní podložka
 tile.agricrops:water_tank.0.name=Dřevěný zásobník na vodu
 tile.agricrops:water_tank.1.name=Železný zásobník na vodu
-tile.agricrops:water_channel_normal.0.name=Wooden Irrigation Channel
-tile.agricrops:water_channel_full.0.name=Wooden Irrigation Channel
-tile.agricrops:water_channel.1.name=Železná zavažovací trubka
-tile.agricrops:water_channel_valve.0.name=Dřevěný ventil
-tile.agricrops:water_channel_valve.1.name=Železný ventil
-tile.agricrops:sprinkler.name=Zavlažovač
 tile.agricrops:seed_storage.0.name=Zásobník na semínka
 tile.agricrops:seed_storage_controller.0.name=Ovladač zásobníku na semínka
 tile.agricrops:fence.0.name=Plot
 tile.agricrops:fence_gate.0.name=Vrata
-tile.agricrops:grate.0.name=Dřevěný rošt
 tile.agricrops:peripheral.name=Počítačem řízený analyzátor semínek
 
 // ========================================
@@ -99,7 +91,6 @@ agricrops_tooltip.waterPadWet=Poté použijte kýbl pro její zaplnění vodou.
 agricrops_tooltip.growthStage=STádium růstu
 agricrops_tooltip.mature=Zralý
 agricrops_tooltip.valve=Přepnuto ruditovým signálem
-agricrops_tooltip.grate=Klikněte pravým pro aplikování psího vína
 agricrops_tooltip.clipper1=Klikněte pravým na plod pro získání ústřižků
 agricrops_tooltip.clipper2=Ústřižky mohou být zasazeny na jiné rostliny.
 agricrops_tooltip.clipper3=Úspěch zasazení závisí na síle rostliny.

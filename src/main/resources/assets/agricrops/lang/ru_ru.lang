@@ -39,20 +39,12 @@ item.agricrops:nugget_unknown.name=Неизвестный фрагмент
 // ========================================
 tile.agricrops:crops.name=Жёрдочки
 tile.agricrops:seed_analyzer.name=Анализатор семян
-tile.agricrops:water_pad.name=Водная площадка
 tile.agricrops:water_tank.0.name=Деревянный бак для воды
 tile.agricrops:water_tank.1.name=Железный бак для воды
-tile.agricrops:water_channel_normal.0.name=Деревянный оросительный канал
-tile.agricrops:water_channel_full.0.name=Деревянный оросительный канал
-tile.agricrops:water_channel.1.name=Железная оросительная труба
-tile.agricrops:water_channel_valve.0.name=Деревянный канальный клапан
-tile.agricrops:water_channel_valve.1.name=Железный клапан трубы
-tile.agricrops:sprinkler.name=Разбрызгиватель
 tile.agricrops:seed_storage.0.name=Хранилище семян
 tile.agricrops:seed_storage_controller.0.name=Контроллер хранилища семян
 tile.agricrops:fence.0.name=Забор
 tile.agricrops:fence_gate.0.name=Калитка
-tile.agricrops:grate.0.name=Деревянная решетка
 tile.agricrops:peripheral.name=Компьютер контролируемый анализатор семян
 
 // ========================================
@@ -99,7 +91,6 @@ agricrops_tooltip.waterPadWet= а затем используйте ведро �
 agricrops_tooltip.growthStage=Стадия роста
 agricrops_tooltip.mature=Созрело
 agricrops_tooltip.valve=Переключается с помощью сигнала красного камня 
-agricrops_tooltip.grate=ПКМ с лозами, чтобы применить лозы
 agricrops_tooltip.clipper1=ПКМ на посевы, чтобы получить обрезок
 agricrops_tooltip.clipper2=Обрезок можно высаживать на другие культуры
 agricrops_tooltip.clipper3=Успех посадки зависит от силы

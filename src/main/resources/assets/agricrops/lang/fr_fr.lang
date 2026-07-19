@@ -39,20 +39,12 @@ item.agricrops:nugget_unknown.name=Fragment Inconnu
 // ========================================
 tile.agricrops:crops.name=Tuteurs
 tile.agricrops:seedAnalyzer.name=Analyseur de graines
-tile.agricrops:water_pad.name=Protection d'eau
 tile.agricrops:water_tank.0.name=Réservoir d'eau en bois
 tile.agricrops:water_tank.1.name=Réservoir d'eau en fer
-tile.agricrops:water_channel_normal.0.name=Cannal d'irrigation en bois
-tile.agricrops:water_channel_normal.1.name=Cannal d'irrigation en fer
-tile.agricrops:water_channel_normal.1.name=Tuyau d'irrigation en fer
-tile.agricrops:water_channel_valve.0.name=Vanne de cannal en bois
-tile.agricrops:water_channel_valve.1.name=Vanne de cannal en fer
-tile.agricrops:sprinkler.name=Arroseur
 tile.agricrops:seed_Storage.0.name=Stockage de graines
 tile.agricrops:seed_storage_controller.0.name=Contrôleur de stockage de graines
 tile.agricrops:fence.0.name=Barrière
 tile.agricrops:fence_gate.0.name=Portillon
-tile.agricrops:grate.0.name=Grille en bois
 tile.agricrops:peripheral.name=Analyseur de graines contrôlé par ordinateur
 
 // ========================================
@@ -99,7 +91,6 @@ agricrops_tooltip.waterPadWet=ensuite utilisez un seau d'eau pour le remplir
 agricrops_tooltip.growthStage=Croissance
 agricrops_tooltip.mature=Mature
 agricrops_tooltip.valve=Basculé avec un signal redstone
-agricrops_tooltip.grate=Cliquez droit avec des vignes pour placer les vignes
 agricrops_tooltip.clipper1=Cliquez droit les cultures pour obtenir des boutures
 agricrops_tooltip.clipper2=Les boutures peuvent être planté sur d'autres tuteurs
 agricrops_tooltip.clipper3=Le succès du bouturage dépend de la force de la plante

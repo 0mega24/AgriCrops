@@ -7,7 +7,6 @@ import dev.omega24.agricrops.network.MessageContainerSeedStorage;
 import dev.omega24.agricrops.network.MessageFertilizerApplied;
 import dev.omega24.agricrops.network.MessageCompareLight;
 import dev.omega24.agricrops.network.MessageGuiSeedStorageClearSeed;
-import dev.omega24.agricrops.network.MessageSyncFluidAmount;
 import dev.omega24.agricrops.network.MessageTileEntitySeedStorage;
 import dev.omega24.agricrops.network.json.MessageSyncMutationJson;
 import dev.omega24.agricrops.network.json.MessageSyncPlantJson;
@@ -103,7 +102,6 @@ public class AgriCraft extends InfinityMod {
         wrapper.registerMessage(MessageContainerSeedStorage.class);
         wrapper.registerMessage(MessageFertilizerApplied.class);
         wrapper.registerMessage(MessageGuiSeedStorageClearSeed.class);
-        wrapper.registerMessage(MessageSyncFluidAmount.class);
         wrapper.registerMessage(MessageTileEntitySeedStorage.class);
         wrapper.registerMessage(MessageSyncSoilJson.class);
         wrapper.registerMessage(MessageSyncPlantJson.class);

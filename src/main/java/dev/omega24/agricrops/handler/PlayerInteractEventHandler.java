@@ -2,7 +2,6 @@ package dev.omega24.agricrops.handler;
 
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
-import dev.omega24.agricrops.blocks.BlockGrate;
 import dev.omega24.agricrops.init.AgriBlocks;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import dev.omega24.agricrops.tiles.TileEntityCrop;
@@ -98,90 +97,6 @@ public class PlayerInteractEventHandler {
         }
     }
 
-    /*
-     * Event handler to create water pads
-     */
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void waterPadCreation(PlayerInteractEvent.RightClickBlock event) {
-        // Fetch held item.
-        final ItemStack stack = event.getItemStack();
-
-        // Check if holding shovel.
-        if (!StackHelper.isValid(stack, ItemSpade.class)) {
-            return;
-        }
-
-        // Fetch world information.
-        final BlockPos pos = event.getPos();
-        final World world = event.getWorld();
-        final IBlockState state = world.getBlockState(pos);
-
-        // Fetch the block at the location.
-        final Block block = state.getBlock();
-
-        // Test that clicked block was farmland.
-        if (block != Blocks.FARMLAND) {
-            return;
-        }
-
-        // Deny the event.
-        event.setUseBlock(Event.Result.DENY);
-        event.setUseItem(Event.Result.DENY);
-        event.setResult(Event.Result.DENY);
-
-        // If we are on the client side we are done.
-        if (event.getSide().isClient()) {
-            return;
-        }
-
-        // Fetch the player.
-        final EntityPlayer player = event.getEntityPlayer();
-
-        // Create the new block on the server side.
-        world.setBlockState(pos, AgriBlocks.getInstance().WATER_PAD.getDefaultState(), 3);
-
-        // Damage player's tool if not in creative.
-        if (!player.capabilities.isCreativeMode) {
-            stack.damageItem(1, player);
-        }
-    }
-
-    /*
-     * This is done with an event because else the player will place the vines
-     * as a block instead of applying them to the grate
-     */
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void applyVinesToGrate(PlayerInteractEvent.RightClickBlock event) {
-        // Fetch the ItemStack
-        final ItemStack stack = event.getItemStack();
-
-        // If the stack is null, or otherwise invalid, who cares?
-        if (!StackHelper.isValid(stack)) {
-            return;
-        }
-
-        // If the player is not holding a stack of vines, who cares?
-        if (stack.getItem() != Item.getItemFromBlock(Blocks.VINE)) {
-            return;
-        }
-
-        // Fetch world information.
-        final BlockPos pos = event.getPos();
-        final World world = event.getWorld();
-        final IBlockState state = world.getBlockState(pos);
-
-        // Fetch the block at the location.
-        final Block block = state.getBlock();
-
-        // If the player isn't clicking a grate, who cares?
-        if (!(block instanceof BlockGrate)) {
-            return;
-        }
-
-        // The player is trying to place vines! Scandalous!
-        // We better deny the event!
-        event.setUseItem(Event.Result.DENY);
-    }
 
     /*
      * Event handler to deny bonemeal while sneaking on crops that are not

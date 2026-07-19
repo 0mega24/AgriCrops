@@ -39,20 +39,12 @@ item.agricrops:nugget_unknown.name=Unknown Fragment
 // ========================================
 tile.agricrops:crops.name=Crop Sticks
 tile.agricrops:seed_analyzer.name=Seed Analyzer
-tile.agricrops:water_pad.name=Water Pad
 tile.agricrops:water_tank.0.name=Wooden Water Tank
 tile.agricrops:water_tank.1.name=Iron Water Tank
-tile.agricrops:water_channel_normal.0.name=Wooden Irrigation Channel
-tile.agricrops:water_channel_full.0.name=Wooden Irrigation Channel
-tile.agricrops:water_channel.1.name=Iron Irrigation Pipe
-tile.agricrops:water_channel_valve.0.name=Wooden Channel Valve
-tile.agricrops:water_channel_valve.1.name=Iron Pipe Valve
-tile.agricrops:sprinkler.name=Sprinkler
 tile.agricrops:seed_storage.0.name=Seed Storage
 tile.agricrops:seed_storage_controller.0.name=Seed Storage Controller
 tile.agricrops:fence.0.name=Fence
 tile.agricrops:fence_gate.0.name=Fence Gate
-tile.agricrops:grate.0.name=Wooden Grate
 tile.agricrops:peripheral.name=Computer Controlled Seed Analyzer
 
 // ========================================
@@ -99,7 +91,6 @@ agricrops_tooltip.waterPadWet=then use a bucket of water to fill it up
 agricrops_tooltip.growthStage=Growthstage
 agricrops_tooltip.mature=Mature
 agricrops_tooltip.valve=Toggled with a redstone signal
-agricrops_tooltip.grate=Right click with vines to apply vines
 agricrops_tooltip.clipper1=Right click on crops to obtain clippings
 agricrops_tooltip.clipper2=Clippings can be planted on other crops
 agricrops_tooltip.clipper3=Success of planting is based on strength

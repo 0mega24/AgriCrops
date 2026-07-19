@@ -40,20 +40,12 @@ item.agricrops:nugget_unknown.name=Fragmento desconhecido
 // ========================================
 tile.agricrops:crops.name=Gravetos de Colheita
 tile.agricrops:seed_analyzer.name=Analisador de Sementes
-tile.agricrops:water_pad.name=Almofada de água
 tile.agricrops:water_tank.0.name=Tanque de água de madeira
 tile.agricrops:water_tank.1.name=Tanque de água de ferro
-tile.agricrops:water_channel_normal.0.name=Canal de irrigação de madeira
-tile.agricrops:water_channel_full.0.name=Canal de irrigação de madeira
-tile.agricrops:water_channel.1.name=Tubo de irrigação de ferro
-tile.agricrops:water_channel_valve.0.name=Válvula de canal de madeira
-tile.agricrops:water_channel_valve.1.name=Válvula de canal de ferro
-tile.agricrops:sprinkler.name=Aspersor
 tile.agricrops:seed_storage.0.name=Armazenamento de sementes
 tile.agricrops:seed_storage_controller.0.name=Controlador de armazenamento de sementes
 tile.agricrops:fence.0.name=Cerca
 tile.agricrops:fence_gate.0.name=Portão
-tile.agricrops:grate.0.name=Grelha de madeira
 tile.agricrops:peripheral.name=Computador Controlador de Analisador de Sementes
 
 // ========================================
@@ -99,7 +91,6 @@ agricrops_tooltip.waterPadWet=depois use um balde de água para encher
 agricrops_tooltip.growthStage=Estágio de crescimento
 agricrops_tooltip.mature=Maduro
 agricrops_tooltip.valve=Altera com um sinal de redstone
-agricrops_tooltip.grate=Clique com o botão direito com trepadeiras para aplicar
 agricrops_tooltip.clipper1=Clique com o botão direito nas colheitas para obter recortes
 agricrops_tooltip.clipper2=Recortes podem ser plantados em outros gravetos
 agricrops_tooltip.clipper3=O sucesso do plantio é baseado na força
