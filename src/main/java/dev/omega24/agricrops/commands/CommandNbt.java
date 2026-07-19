@@ -5,7 +5,7 @@
  */
 package dev.omega24.agricrops.commands;
 
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.collect.ComparisonChain;
 import dev.omega24.agricrops.utility.StackHelper;
 import com.infinityraider.infinitylib.utility.MessageUtil;

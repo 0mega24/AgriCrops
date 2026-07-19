@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.network;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.AgriCraft;
 import dev.omega24.agricrops.utility.IAgriFluidComponentSyncable;
 import com.infinityraider.infinitylib.network.MessageBase;

@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.tiles.irrigation;
 
 // Imports would go here, if there were any.
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import com.google.common.base.Preconditions;
 import dev.omega24.agricrops.api.v1.misc.IAgriFluidComponent;
 import dev.omega24.agricrops.reference.AgriCraftConfig;

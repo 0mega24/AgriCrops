@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.gui;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.container.ContainerSeedAnalyzer;
 import dev.omega24.agricrops.gui.component.BasicComponents;
 import dev.omega24.agricrops.gui.journal.GuiJournal;

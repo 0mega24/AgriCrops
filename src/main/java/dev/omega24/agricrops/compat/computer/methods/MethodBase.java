@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.compat.computer.methods;
 
 import dev.omega24.agricrops.api.v1.misc.IAgriPeripheralMethod;
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import static dev.omega24.agricrops.compat.computer.methods.MethodUtilities.*;
 import dev.omega24.agricrops.tiles.TileEntityPeripheral;
 import dev.omega24.agricrops.tiles.TileEntityCrop;

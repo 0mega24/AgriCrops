@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.utility;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.util.Optional;

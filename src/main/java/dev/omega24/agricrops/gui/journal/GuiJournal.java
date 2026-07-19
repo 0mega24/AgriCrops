@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.gui.journal;
 
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.util.MathHelper;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.gui.AgriGuiWrapper;
 import dev.omega24.agricrops.gui.ComponentGui;

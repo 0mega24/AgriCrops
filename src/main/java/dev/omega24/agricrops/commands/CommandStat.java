@@ -5,8 +5,8 @@
  */
 package dev.omega24.agricrops.commands;
 
-import com.agricrops.agricore.util.MathHelper;
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.MathHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.collect.ComparisonChain;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;

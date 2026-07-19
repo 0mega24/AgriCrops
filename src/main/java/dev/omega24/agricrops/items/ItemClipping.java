@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.items;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.util.TypeHelper;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;

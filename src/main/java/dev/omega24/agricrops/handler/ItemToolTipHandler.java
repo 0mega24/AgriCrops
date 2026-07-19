@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.handler;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.items.IAgriClipperItem;
 import dev.omega24.agricrops.api.v1.items.IAgriTrowelItem;

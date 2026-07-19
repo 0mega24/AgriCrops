@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.blocks;
 
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizable;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;

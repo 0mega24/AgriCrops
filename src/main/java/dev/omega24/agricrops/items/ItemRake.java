@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.items;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import com.google.common.collect.ImmutableList;
 import dev.omega24.agricrops.api.v1.items.IAgriRakeItem;
 import dev.omega24.agricrops.api.v1.misc.IAgriRakeable;

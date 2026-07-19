@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.farming;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.util.MathHelper;
 import dev.omega24.agricrops.api.v1.adapter.IAgriAdapter;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.reference.AgriCraftConfig;

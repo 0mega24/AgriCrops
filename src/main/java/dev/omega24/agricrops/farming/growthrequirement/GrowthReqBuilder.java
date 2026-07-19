@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.farming.growthrequirement;
 
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.util.MathHelper;
 import dev.omega24.agricrops.api.v1.requirement.ICondition;
 import dev.omega24.agricrops.api.v1.requirement.IGrowthReqBuilder;
 import dev.omega24.agricrops.api.v1.requirement.IGrowthRequirement;

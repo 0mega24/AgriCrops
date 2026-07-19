@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.gui;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.tiles.TileEntityPeripheral;
 import dev.omega24.agricrops.container.ContainerSeedAnalyzer;

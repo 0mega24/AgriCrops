@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.items;
 
-import com.agricrops.agricore.config.AgriConfigCategory;
-import com.agricrops.agricore.config.AgriConfigurable;
+import com.agricraft.agricore.config.AgriConfigCategory;
+import com.agricraft.agricore.config.AgriConfigurable;
 import com.google.common.collect.ImmutableList;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;

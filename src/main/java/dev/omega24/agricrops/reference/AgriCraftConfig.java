@@ -6,9 +6,9 @@
  */
 package dev.omega24.agricrops.reference;
 
-import com.agricrops.agricore.config.AgriConfigCategory;
-import com.agricrops.agricore.config.AgriConfigurable;
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.config.AgriConfigCategory;
+import com.agricraft.agricore.config.AgriConfigurable;
+import com.agricraft.agricore.core.AgriCore;
 import net.minecraft.util.text.TextFormatting;
 
 /**

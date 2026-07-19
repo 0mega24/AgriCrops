@@ -5,8 +5,8 @@
  */
 package dev.omega24.agricrops.init;
 
-import com.agricrops.agricore.config.AgriConfigCategory;
-import com.agricrops.agricore.config.AgriConfigurable;
+import com.agricraft.agricore.config.AgriConfigCategory;
+import com.agricraft.agricore.config.AgriConfigurable;
 import dev.omega24.agricrops.commands.CommandNbt;
 import dev.omega24.agricrops.commands.CommandStat;
 import javax.annotation.Nonnull;

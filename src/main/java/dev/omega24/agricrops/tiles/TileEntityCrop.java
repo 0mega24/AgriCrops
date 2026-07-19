@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.tiles;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.util.MathHelper;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import dev.omega24.agricrops.api.v1.AgriApi;

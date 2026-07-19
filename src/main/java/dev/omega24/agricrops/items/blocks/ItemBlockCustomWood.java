@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.items.blocks;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.reference.AgriNBT;
 import dev.omega24.agricrops.utility.BaseIcons;
 import dev.omega24.agricrops.utility.CustomWoodType;

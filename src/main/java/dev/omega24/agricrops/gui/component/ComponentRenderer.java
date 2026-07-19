@@ -2,8 +2,8 @@
  */
 package dev.omega24.agricrops.gui.component;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.util.MathHelper;
 import dev.omega24.agricrops.gui.AgriGuiWrapper;
 import dev.omega24.agricrops.utility.GuiHelper;
 import java.awt.Color;

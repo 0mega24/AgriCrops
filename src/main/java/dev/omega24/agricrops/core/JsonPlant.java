@@ -3,8 +3,8 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.plant.AgriPlant;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.plant.AgriPlant;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.render.RenderMethod;

@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.plant.AgriMutation;
+import com.agricraft.agricore.plant.AgriMutation;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;

@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.plant.AgriSoil;
+import com.agricraft.agricore.plant.AgriSoil;
 import com.google.common.base.Preconditions;
 import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;

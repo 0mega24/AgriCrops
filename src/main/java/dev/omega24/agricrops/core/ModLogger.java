@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.log.AgriLogAdapter;
+import com.agricraft.agricore.log.AgriLogAdapter;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.text.MessageFormat;
 import net.minecraftforge.fml.common.FMLLog;

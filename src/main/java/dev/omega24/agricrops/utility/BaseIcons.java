@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.utility;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import javax.annotation.Nonnull;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraftforge.fml.relauncher.Side;

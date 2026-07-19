@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.lang.AgriTranslationAdapter;
+import com.agricraft.agricore.lang.AgriTranslationAdapter;
 import dev.omega24.agricrops.AgriCraft;
 
 /**

@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.gui.component;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import java.awt.Point;
 import java.util.List;
 import java.util.function.BiFunction;

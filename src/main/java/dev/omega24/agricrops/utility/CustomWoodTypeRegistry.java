@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.utility;
 
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import dev.omega24.agricrops.reference.AgriNBT;
 import dev.omega24.agricrops.reference.AgriProperties;

@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.util.AgriValidator;
+import com.agricraft.agricore.util.AgriValidator;
 import dev.omega24.agricrops.utility.OreDictUtil;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;

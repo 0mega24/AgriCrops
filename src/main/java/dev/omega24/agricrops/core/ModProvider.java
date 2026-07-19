@@ -2,8 +2,8 @@
  */
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.config.AgriConfigAdapter;
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.config.AgriConfigAdapter;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.reference.Reference;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;

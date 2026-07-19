@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.utility;
 
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.base.Preconditions;
 import com.google.common.math.IntMath;
 import dev.omega24.agricrops.api.v1.util.MethodResult;

@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.farming.mutation;
 
-import com.agricrops.agricore.util.MathHelper;
+import com.agricraft.agricore.util.MathHelper;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import java.util.Arrays;

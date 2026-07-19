@@ -1,7 +1,7 @@
 package dev.omega24.agricrops.gui;
 
-import com.agricrops.agricore.config.AgriConfigCategory;
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.config.AgriConfigCategory;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.core.CoreHandler;
 import dev.omega24.agricrops.reference.Reference;
 import java.util.ArrayList;

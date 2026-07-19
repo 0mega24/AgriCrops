@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.init;
 
-import com.agricrops.agricore.util.ReflectionHelper;
+import com.agricraft.agricore.util.ReflectionHelper;
 import net.minecraft.block.BlockFence;
 import net.minecraft.block.BlockFenceGate;
 import net.minecraft.init.Blocks;

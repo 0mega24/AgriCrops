@@ -1,12 +1,12 @@
 package dev.omega24.agricrops.core;
 
-import com.agricrops.agricore.config.AgriConfigAdapter;
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.json.AgriLoader;
-import com.agricrops.agricore.plant.AgriMutation;
-import com.agricrops.agricore.plant.AgriPlant;
-import com.agricrops.agricore.plant.AgriSoil;
-import com.agricrops.agricore.util.ResourceHelper;
+import com.agricraft.agricore.config.AgriConfigAdapter;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.json.AgriLoader;
+import com.agricraft.agricore.plant.AgriMutation;
+import com.agricraft.agricore.plant.AgriPlant;
+import com.agricraft.agricore.plant.AgriSoil;
+import com.agricraft.agricore.util.ResourceHelper;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;

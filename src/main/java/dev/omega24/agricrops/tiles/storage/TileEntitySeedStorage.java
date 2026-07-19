@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.tiles.storage;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import com.google.common.base.Preconditions;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;

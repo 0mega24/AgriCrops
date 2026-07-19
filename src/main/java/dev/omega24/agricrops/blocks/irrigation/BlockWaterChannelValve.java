@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.blocks.irrigation;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.items.blocks.ItemBlockCustomWood;
 import dev.omega24.agricrops.reference.AgriProperties;
 import dev.omega24.agricrops.reference.Constants;

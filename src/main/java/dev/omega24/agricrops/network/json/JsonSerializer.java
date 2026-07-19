@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.network.json;
 
-import com.agricrops.agricore.json.AgriSerializable;
+import com.agricraft.agricore.json.AgriSerializable;
 import com.google.gson.Gson;
 import com.infinityraider.infinitylib.network.serialization.ByteBufUtil;
 import com.infinityraider.infinitylib.network.serialization.IMessageReader;

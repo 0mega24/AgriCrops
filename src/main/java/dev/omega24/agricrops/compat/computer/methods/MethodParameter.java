@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.compat.computer.methods;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 
 public class MethodParameter {
 

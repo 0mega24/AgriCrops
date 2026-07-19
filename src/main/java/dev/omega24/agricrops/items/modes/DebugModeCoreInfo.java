@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.items.modes;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import com.infinityraider.infinitylib.utility.MessageUtil;
 import com.infinityraider.infinitylib.utility.debug.DebugMode;
 import net.minecraft.entity.EntityLivingBase;

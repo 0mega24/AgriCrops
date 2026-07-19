@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.proxy;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.AgriCraft;
 import dev.omega24.agricrops.core.CoreHandler;
 import dev.omega24.agricrops.handler.GuiHandler;

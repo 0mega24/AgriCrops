@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.renderers.blocks;
 
-import com.agricrops.agricore.util.TypeHelper;
+import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.collect.Maps;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.blocks.BlockCrop;

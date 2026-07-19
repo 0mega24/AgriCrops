@@ -1,10 +1,10 @@
 package dev.omega24.agricrops.handler;
 
-import com.agricrops.agricore.core.AgriCore;
-import com.agricrops.agricore.log.AgriLogger;
-import com.agricrops.agricore.plant.AgriMutation;
-import com.agricrops.agricore.plant.AgriPlant;
-import com.agricrops.agricore.plant.AgriSoil;
+import com.agricraft.agricore.core.AgriCore;
+import com.agricraft.agricore.log.AgriLogger;
+import com.agricraft.agricore.plant.AgriMutation;
+import com.agricraft.agricore.plant.AgriPlant;
+import com.agricraft.agricore.plant.AgriSoil;
 import dev.omega24.agricrops.network.json.MessageSyncMutationJson;
 import dev.omega24.agricrops.network.json.MessageSyncPlantJson;
 import dev.omega24.agricrops.network.json.MessageSyncSoilJson;

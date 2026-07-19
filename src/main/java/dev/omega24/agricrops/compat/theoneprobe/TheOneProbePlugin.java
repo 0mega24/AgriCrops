@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.compat.theoneprobe;
 
-import com.agricrops.agricore.core.AgriCore;
+import com.agricraft.agricore.core.AgriCore;
 import dev.omega24.agricrops.api.v1.plugin.AgriPlugin;
 import dev.omega24.agricrops.api.v1.plugin.IAgriPlugin;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
