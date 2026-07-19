@@ -7,10 +7,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
 
 /**
  *
@@ -18,10 +17,13 @@ import org.reflections.scanners.ResourcesScanner;
  */
 public class ResourceHelper {
 
-    private static final Reflections REFLECTIONS = new Reflections(null, new ResourcesScanner());
-
+    // Agricrops: this used to scan the jar for bundled default JSON resources via
+    // org.reflections. The fork dropped the upstream AgriPlants defaults (and the
+    // org.reflections runtime dependency along with them), so there is nothing to
+    // discover here; the fork defines its species via the ZenScript-driven
+    // registries (design §7/§11) instead. Returns empty.
     public static Set<String> findResources(Predicate<String> nameFilter) {
-        return REFLECTIONS.getResources(nameFilter::test);
+        return Collections.emptySet();
     }
 
     /**

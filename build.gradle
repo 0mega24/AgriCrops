@@ -59,9 +59,7 @@ dependencies {
     // InfinityLib 1.12.1 for MC 1.12.2 — the exact version the old submodule pinned.
     implementation rfg.deobf('curse.maven:infinitylib-251396:3317119')
 
-    // --- Libraries used by the vendored AgriCore (src/main/java/com/agricraft/agricore) ---
-    implementation 'org.reflections:reflections:0.9.11'
-    // gson is provided on the Minecraft classpath.
+    // gson (used by the vendored AgriCore) is provided on the Minecraft classpath.
 
     // --- Mod integrations: compile the compat/ classes (soft deps, gated by
     //     Loader.isModLoaded at runtime, so compileOnly here). Coordinates carried
