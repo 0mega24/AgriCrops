@@ -1,21 +1,20 @@
 # shell.nix — FHS dev environment for building Agricrops on NixOS.
 #
-# Why an FHS sandbox: this is a Forge 1.12.2 project built with ForgeGradle 2.x,
-# which shells out to prebuilt native binaries (the MCP decompiler/deobf toolchain
-# and, at runtime, LWJGL/GLFW/OpenAL natives) that assume a standard FHS layout.
-# NixOS does not provide that layout, so those binaries fail to find their loader
-# and libraries. buildFHSUserEnv drops you into a sandbox where they behave as they
-# would on a "normal" distro. (See also crop-mod-getting-started.md §1 — this is the
-# `buildFHSUserEnv` route; the alternative is enabling `programs.nix-ld` system-wide.)
+# Build stack: RetroFuturaGradle (RFG) + Gradle 8.9, targeting Forge 1.12.2 / Java 8.
+#
+# Why an FHS sandbox: RFG's build itself is mostly pure-JVM, but `runClient` /
+# `runServer` launch real Minecraft, which dlopens prebuilt LWJGL/GLFW/OpenAL
+# natives that assume a standard FHS layout NixOS doesn't provide. This sandbox
+# makes those behave as on a "normal" distro. (Alternative: enable programs.nix-ld
+# system-wide — see crop-mod-getting-started.md §1.)
 #
 # Usage:
-#   nix-shell                              # enter the FHS env (bash)
-#   ./gradlew setupDecompWorkspace         # one-time FG2 setup (decompiles Minecraft)
-#   ./gradlew build                        # build the mod jar
-#   ./gradlew genIntellijRuns              # generate IntelliJ runClient/runServer configs
+#   nix-shell                  # enter the FHS env (bash), JAVA_HOME -> jdk8
+#   ./gradlew build            # decompiles MC (first run) and builds the mod jar
+#   ./gradlew runClient        # launch a dev client (uses the natives this shell provides)
 #
-# Forge 1.12.2 requires Java 8 SPECIFICALLY (not a newer LTS). If `pkgs.jdk8` is not
-# available on your channel, swap in `pkgs.temurin-bin-8` or `pkgs.zulu8`.
+# Forge 1.12.2 targets Java 8; Gradle 8.9 runs fine on it. If `pkgs.jdk8` is not on
+# your channel, swap in `pkgs.temurin-bin-8` or `pkgs.zulu8`.
 
 { pkgs ? import <nixpkgs> { } }:
 
@@ -23,10 +22,10 @@
   name = "agricrops-dev";
 
   targetPkgs = pkgs: (with pkgs; [
-    jdk8            # Forge 1.12.2 toolchain — Java 8 only
-    git             # gradlew + submodules
+    jdk8            # Forge 1.12.2 toolchain — Java 8
+    git
 
-    # Native libraries ForgeGradle / LWJGL2 / GLFW expect to dlopen at runtime:
+    # Native libraries LWJGL2 / GLFW expect to dlopen at runClient time:
     zlib
     stdenv.cc.cc.lib
     libGL

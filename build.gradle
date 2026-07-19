@@ -1,207 +1,74 @@
-// QuikMod Buildscript
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name = "Forge Gradle"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "Gradle Plugins"
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'gradle.plugin.com.rlonryan:QuikMod:1.0.21'
+plugins {
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    // RetroFuturaGradle: the maintained replacement for the dead ForgeGradle 2.x.
+    // Same core stack GregTech CEu and the GTNH ExampleMod build on.
+    id 'com.gtnewhorizons.retrofuturagradle' version '1.4.0'
+}
+
+// Agricrops — a GTNH-style crop mod for Minecraft 1.12.2, hard-forked from AgriCraft.
+// See BUILDING.md for the full picture (JDK, submodule history, dependency notes).
+
+group = 'dev.omega24.agricrops'
+version = '0.1.0'
+
+base {
+    archivesName = 'agricrops'
+}
+
+java {
+    toolchain {
+        // Forge 1.12.2 targets Java 8. (Jabel-style Java-17-syntax-on-8 can be added
+        // later if desired; the current source is plain Java 8.)
+        languageVersion = JavaLanguageVersion.of(8)
     }
 }
 
-// Apply QuikMod
-apply plugin: 'com.rlonryan.quikmod'
-apply plugin: 'maven-publish'
-
-// Tweak MineCraft Task
 minecraft {
-    makeObfSourceJar = false
-    useDepAts = true
+    mcVersion = '1.12.2'
+    // RFG defaults a compatible Forge + MCP stable mappings for 1.12.2.
+    username = 'Developer'
 }
 
-// Setup Remotes
 repositories {
-    mavenLocal()
+    maven {
+        name = 'GTNH Maven'
+        url = 'https://nexus.gtnewhorizons.com/repository/public/'
+    }
+    maven {
+        // Pull any mod dependency straight from CurseForge by project/file id.
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+    }
     mavenCentral()
-    maven {
-        name "TehNut Maven"
-        url "http://tehnut.info/maven"
-    }
-    maven {
-        name "Tterrag Maven"
-        url "http://maven.tterrag.com/"
-    }
-    maven {
-        name "Tterrag Maven2"
-        url "http://maven2.tterrag.com/"
-    }
-    maven {
-        name "JEI Maven"
-        url "http://dvs1.progwml6.com/files/maven"
-    }
-    maven {
-        name "OpenComputers"
-        url  "http://maven.cil.li/"
-    }
-    maven {
-        name "ActuallyAdditions"
-        url "https://maven.chaosfield.at/"
-    }
-    maven {
-        name "CodeChicken"
-        url "http://chickenbones.net/maven/"
-    }
-    maven {
-        name "Thermal Expansion"
-        url "http://maven.covers1624.net"
-    }
-    maven {
-        name "Botania"
-        url "https://maven.blamejared.com/"
-    }
-    maven {
-        name "Baubles"
-        url "https://maven.thiakil.com/"
-    }
-    maven {
-        name "JitPack"
-        url "https://jitpack.io"
-    }
 }
 
-// List Deps.
 dependencies {
-    // AgriCore
-    shade project(':AgriCore');
-    
-    // InfinityLib
-    compile project(':InfinityLib')
-    
-    // Java Libraries
-    compile 'com.google.guava:guava:24.0-jre'
-    
-    // Minecraft Mods
-    deobfCompile "mezz.jei:jei_1.12.2:4.11.0.212:api"
-    runtime "mezz.jei:jei_1.12.2:4.11.0.212"
-    deobfCompile "com.azanor.baubles:Baubles:1.12-1.5.2"
-    deobfCompile "vazkii.botania:Botania:r1.10-353"
-    deobfCompile "de.ellpeck.actuallyadditions:ActuallyAdditions:1.12.2-r136"
-    deobfCompile "li.cil.oc:OpenComputers:MC1.12.2-1.7.1.63"
-    //deobfCompile ("codechicken:CodeChickenLib:1.12.2-3.2.0.+:deobf") { transitive = false }
-    //deobfCompile ("codechicken:EnderStorage:1.12.2-2.4.4.+:deobf") { transitive = false }
-    //deobfCompile "cofh:ThermalExpansion:1.12.2-5.5.0.+:deobf"
-    //deobfCompile "cofh:ThermalDynamics:1.12.2-2.5.0.+:deobf"
-    
-    // *Special* Minecraft Mods
-    // Have to disable transitive deps on this one since stupid stuff is going on...
-    deobfCompile ("mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.19-11") { transitive = false }
-    deobfCompile ("com.enderio:EnderIO:1.12.2-5.3.70:api") { transitive = false }
-}
+    // --- Base library agricrops is built on (prebuilt + deobfuscated) ---
+    // InfinityLib 1.12.1 for MC 1.12.2 — the exact version the old submodule pinned.
+    implementation rfg.deobf('curse.maven:infinitylib-251396:3317119')
 
-// Delete Old Plants
-task deleteOldJsons(type: Delete) {
-    delete "run/config/agricraft/json"
-}
+    // --- Libraries used by the vendored AgriCore (src/main/java/com/agricraft/agricore) ---
+    implementation 'org.reflections:reflections:0.9.11'
+    // gson is provided on the Minecraft classpath.
 
-// Add AgriPlants
-processResources {
-    from('lib/AgriPlants') {
-        include '**/*.json'
-        into 'json/defaults'
-    }
-    outputs.upToDateWhen{ false }
-}
-
-// Javadoc
-task mainJavadoc(type: Javadoc) {
-    source = sourceSets.main.allJava
-    title = "AgriCraft ${mod.version} Documentation"
-    destinationDir = file("${project.docsDir}/mainJavadoc")
-    failOnError = false
-}
-
-task apiJavadoc(type: Javadoc) {
-    source = sourceSets.main.allJava
-    include "**/api/**"
-    title = "AgriCraft ${mod.version} API Documentation"
-    destinationDir = file("${project.docsDir}/apiJavadoc")
-    failOnError = false
-}
-
-// Jars
-task mainSourceJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
-}
-
-task mainJavadocJar(type: Jar, dependsOn: mainJavadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-task apiJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    include "${mod.package.replace('.', '/')}/api/**/*"
-    classifier = 'api'
-}
-
-task apiSourceJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-    include "${mod.package.replace('.', '/')}/api/**/*"
-    classifier = 'api-source'
-}
-
-task apiJavadocJar(type: Jar, dependsOn: apiJavadoc) {
-    from apiJavadoc.destinationDir
-    classifier = 'api-javadoc'
-}
-
-// Tell build that it needs the API compiled first.
-build.dependsOn apiJar
-
-// Setup Maven Publishing
-publishing {
-    tasks.publish.dependsOn 'build'
-    publications {
-        mavenJava(MavenPublication) {
-            // Main
-            artifact jar
-            artifact javadocJar
-            artifact sourceJar
-            
-            // API
-            artifact apiJar
-            artifact apiJavadocJar
-            artifact apiSourceJar
-        }
-    }
-    repositories {
-        if (project.hasProperty('maven_repo')) {
-            maven { url maven_repo }
-        } else {
-            mavenLocal()
-        }
-    }
-}
-
-// Fix Shading
-jar {
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)){
-            exclude 'META-INF', 'META-INF/**'
-            exclude 'com/google', 'com/google/**'
-            exclude 'net/jcip', 'net/jcip/**'
-            exclude 'edu/umd', 'edu/umd/**'
-            exclude 'javassist', 'javassist/**'
-            exclude 'javax/annotation', 'javax/annotation/**'
-        }
-    }
+    // --- Mod integrations: compile the compat/ classes (soft deps, gated by
+    //     Loader.isModLoaded at runtime, so compileOnly here). Coordinates carried
+    //     over from the original AgriCraft build. If any fails to resolve from the
+    //     mavens above, swap to a CurseMaven file id:
+    //     rfg.deobf('curse.maven:<slug>-<projectId>:<fileId>').
+    compileOnly rfg.deobf('curse.maven:opencomputers-223008:6608102')   // OpenComputers (OC telemetry, design §9)
+    compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')         // Baubles 1.5.2
+    compileOnly rfg.deobf('mezz.jei:jei_1.12.2:4.16.1.302')             // JEI
+    // TODO(build-green): verify these four resolve for 1.12.2; otherwise use CurseMaven ids.
+    compileOnly rfg.deobf('vazkii.botania:Botania:r1.10-353')                          // Botania
+    compileOnly rfg.deobf('de.ellpeck.actuallyadditions:ActuallyAdditions:1.12.2-r144') // Actually Additions
+    compileOnly(rfg.deobf('mcjty.theoneprobe:TheOneProbe-1.12:1.12-1.4.19-11')) { transitive = false } // The One Probe
+    compileOnly(rfg.deobf('com.enderio:EnderIO:1.12.2-5.3.70:api')) { transitive = false }              // EnderIO API
 }

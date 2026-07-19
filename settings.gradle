@@ -1,5 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            // RetroFuturaGradle + many 1.12.2 artifacts
+            name = 'GTNH Maven'
+            url = 'https://nexus.gtnewhorizons.com/repository/public/'
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'agricrops'
-include 'AgriCore'
-project(":AgriCore").projectDir = file("lib/AgriCore")
-include 'InfinityLib'
-project(":InfinityLib").projectDir = file("lib/InfinityLib")

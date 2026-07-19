@@ -1,28 +1,32 @@
 package dev.omega24.agricrops.reference;
 
 /**
- * This class is fine.
+ * Mod-wide constants.
  *
+ * <p>Previously QuikMod-templated from {@code mod.properties}; now plain literals
+ * after the migration to the RetroFuturaGradle build (there is no more build-time
+ * token substitution here).
  */
 public interface Reference {
 
-    String MOD_NAME = /*^${mod.name}^*/ "Agricrops";
-    String MOD_ID = /*^${mod.id}^*/ "agricrops";
-    String AUTHOR = /*^${mod.author}^*/ "Captain Nemo";
+    String MOD_NAME = "Agricrops";
+    String MOD_ID = "agricrops";
+    String AUTHOR = "omega24";
 
-    String VER_MAJOR = /*^${mod.version_major}^*/ "0";
-    String VER_MINOR = /*^${mod.version_minor}^*/ "0";
-    String VER_PATCH = /*^${mod.version_patch}^*/ "0";
-    String MOD_VERSION = /*^${mod.version}^*/ "0.0.0";
-    String VERSION = /*^${mod.version_minecraft}-${mod.version}^*/ "0.0-0.0.0";
+    String VER_MAJOR = "0";
+    String VER_MINOR = "1";
+    String VER_PATCH = "0";
+    String MOD_VERSION = "0.1.0";
+    String VERSION = "1.12.2-0.1.0";
 
-    String VERSION_INFLIB = /*^${mod.version_inflib}^*/ "0.0-0.0.0";
-    String VERSION_FORGE = /*^${mod.version_forge}^*/ "0.0-0.0.0";
+    // Lower bounds for the @Mod dependency string. "0.0.0" accepts any version.
+    String VERSION_INFLIB = "0.0.0";
+    String VERSION_FORGE = "14.23.5.2768";
 
     String CLIENT_PROXY_CLASS = "dev.omega24.agricrops.proxy.ClientProxy";
     String SERVER_PROXY_CLASS = "dev.omega24.agricrops.proxy.ServerProxy";
     String GUI_FACTORY_CLASS = "dev.omega24.agricrops.gui.GuiFactory";
 
-    String UPDATE_URL = /*^${mod.update_url}^*/ "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    String UPDATE_URL = "";
 
 }

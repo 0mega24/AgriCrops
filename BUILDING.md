@@ -1,79 +1,64 @@
 # Building Agricrops
 
-Agricrops is a Forge **1.12.2** mod, forked from AgriCraft. It targets **Java 8**
-and builds with **ForgeGradle 2.3** via the third-party **QuikMod** Gradle plugin.
+Agricrops is a Forge **1.12.2** mod, hard-forked from AgriCraft. It builds with
+**RetroFuturaGradle (RFG)** — the maintained replacement for the long-dead
+ForgeGradle 2.x — on **Gradle 8.9**, targeting **Java 8**. This is the same core
+build stack GregTech CEu and the GTNH ExampleMod use.
 
 ## Prerequisites
 
-- **Java 8** (Forge 1.12.2 will not run on a newer JDK).
-- **Git** (the project pulls three submodules — see below).
-- On **NixOS**: use the provided [`shell.nix`](./shell.nix) (`nix-shell`) — ForgeGradle 2.x
-  runs prebuilt native binaries that need an FHS layout. See `crop-mod-getting-started.md` §1.
-
-## Submodules
-
-The build depends on three git submodules under `lib/`:
-
-| Path              | Repo                                            | Role                         |
-|-------------------|-------------------------------------------------|------------------------------|
-| `lib/AgriCore`    | `AgriCraft/AgriCore` (branch `1.12.2`)          | stat/genetics core (MIT)     |
-| `lib/InfinityLib` | `InfinityRaider/InfinityLib` (branch `1.12.1`)  | base mod library (MIT)       |
-| `lib/AgriPlants`  | `AgriCraft/AgriPlants`                          | default plant JSON defaults  |
-
-Initialize them after cloning:
-
-```sh
-git submodule update --init --recursive
-```
-
-> Per the design (`crop-mod-design.md` §11 / §12), the intent is to **replace**
-> AgriCore's stat/genetics logic with a custom `CropStatCalculator` rather than
-> extend it — keep AgriCore only for non-stat utilities. That divergence hasn't
-> started yet; AgriCore is currently still wired in as-is.
+- **Java 8** (Forge 1.12.2 targets it; Gradle 8.9 runs fine on JDK 8).
+- **Git**.
+- On **NixOS**: use [`shell.nix`](./shell.nix) (`nix-shell`) — `runClient` needs
+  prebuilt LWJGL/GLFW natives in an FHS layout. See `crop-mod-getting-started.md` §1.
 
 ## Build
 
 ```sh
-nix-shell                          # NixOS only; otherwise just ensure Java 8 is active
-./gradlew setupDecompWorkspace     # one-time: decompiles Minecraft for the FG2 workspace
-./gradlew build                    # produces the mod jar under build/libs/
-./gradlew genIntellijRuns          # generate IntelliJ runClient / runServer configs
+nix-shell            # NixOS only; otherwise just make sure Java 8 is active
+./gradlew build      # first run decompiles Minecraft, then builds build/libs/agricrops-0.1.0.jar
+./gradlew runClient  # launch a dev client
 ```
 
-## Known build blocker: dead maven repositories
+No submodules, no `setupDecompWorkspace`, no QuikMod — RFG handles the MCP
+decompile/deobf as part of the build.
 
-`build.gradle` still lists the `http://` maven repositories from AgriCraft's original
-era. Several are dead or have moved to `https://`, so a clean `./gradlew build` will
-fail resolving dependencies until they're updated. Suspect list:
+## What changed from the AgriCraft build
 
-- `http://files.minecraftforge.net/maven`  → `https://maven.minecraftforge.net/`
-- `http://tehnut.info/maven`                (TheOneProbe — likely relocated)
-- `http://maven.tterrag.com/`, `http://maven2.tterrag.com/`
-- `http://dvs1.progwml6.com/files/maven`   (JEI — now under `https://maven.blamejared.com/`)
-- `http://maven.cil.li/`                    (OpenComputers)
-- `http://chickenbones.net/maven/`          (CodeChicken — dead)
-- `http://maven.covers1624.net`             (Thermal — now `https://`)
+This fork migrated off AgriCraft's dead build stack (ForgeGradle 2.3-SNAPSHOT +
+the QuikMod plugin + `http://` mavens that no longer exist):
 
-Fixing these is the **first real task before any code work** (getting-started §3:
-the build must be green, unmodified, before diverging). This has **not** been done
-yet and could not be verified in the setup environment (no Java 8 there).
+- **RetroFuturaGradle** replaces ForgeGradle 2.x. Config lives in `build.gradle` /
+  `settings.gradle` / `gradle.properties` (no auto-managed buildscript, no blowdryer).
+- **Dependencies come from live repos**: GTNH Nexus, CurseMaven (pull any mod by
+  CurseForge id via `rfg.deobf('curse.maven:slug-projectId:fileId')`), BlameJared,
+  Maven Central.
+- **InfinityLib** is now a prebuilt, deobfuscated dependency
+  (`curse.maven:infinitylib-251396:3317119` — InfinityLib 1.12.1 for MC 1.12.2, the
+  exact version the old submodule pinned) instead of a source submodule.
+- **AgriCore** was vendored into the repo at `src/main/java/com/agricraft/agricore`
+  (kept in its original `com.agricraft.*` namespace to mark the borrowed boundary,
+  like InfinityLib). Per design §11/§12 its stat/genetics logic is slated to be
+  replaced by a custom `CropStatCalculator`; the rest stays as-is for now. It pulls
+  `org.reflections` (declared in `build.gradle`).
+- **AgriPlants** (542 upstream default plant/mutation JSONs for other mods) was
+  dropped — the fork defines its own species via the design's ZenScript-driven
+  registries (§7/§11), so the upstream defaults are not carried over.
+- **QuikMod token substitution is gone.** `Reference.java` and `mcmod.info` now hold
+  plain literal values (mod id `agricrops`, package `dev.omega24.agricrops`, version
+  `0.1.0`) instead of `${mod.x}` / `/*^...^*/` templates.
 
-## How the mod id / package are wired (QuikMod)
+## Status / remaining work to a green build
 
-`mod.properties` is the single source of truth. QuikMod substitutes its values into
-the source at build time via inline `/*^${mod.x}^*/` tokens and `${mod.x}` template
-markers. The important fields:
+The migration scaffolding is in place, but a fully green `./gradlew build` still
+needs verification and likely iteration:
 
-```
-id      = agricrops              # the mod id (was: agricraft)
-name    = Agricrops
-package = dev.omega24.agricrops  # Java base package (hard-fork namespace; was: com.infinityraider.agricraft)
-```
-
-`Reference.MOD_ID` carries the id through the code (ResourceLocations, creative tabs,
-unlocalized names). The `assets/agricrops/` resource domain must always match `MOD_ID`.
-
-> The rename so far covers the **mod id** (lowercase `agricraft` → `agricrops`
-> everywhere) and the **Java package**. Cosmetic mixed-case `AgriCraft` brand strings
-> (the main `@Mod` class name, GUI/lang display text, config comments) were left as-is
-> and can be de-branded later — they don't affect the mod id.
+- **Verify the mod-integration dependency coordinates** in `build.gradle` (Botania,
+  Actually Additions, The One Probe, EnderIO — marked `TODO(build-green)`). They're
+  carried over from the original AgriCraft build; if any doesn't resolve from GTNH
+  Nexus, swap it for a CurseMaven `curse.maven:slug-projectId:fileId`. InfinityLib,
+  OpenComputers, Baubles, and JEI already have concrete ids.
+- **First build run** hasn't been executed in this environment (no Java 8 was
+  available where the migration was scaffolded), so treat the initial `./gradlew
+  build` as the shakeout — expect to resolve a few dependency coordinates and
+  possibly minor AgriCore/`org.reflections` classpath issues.
