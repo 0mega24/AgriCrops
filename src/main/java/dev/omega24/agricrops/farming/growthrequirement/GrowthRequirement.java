@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -82,7 +83,13 @@ public final class GrowthRequirement implements IGrowthRequirement {
         Preconditions.checkNotNull(world);
         Preconditions.checkNotNull(pos);
 
-        // Evaluate
+        // Evaluate. Some soils (e.g. farmland) have no item form and so can never match via a
+        // FuzzyStack — those match by block identity instead (IAgriSoil#matchesBlock).
+        final Block block = world.getBlockState(pos.down()).getBlock();
+        if (this.getSoils().stream().anyMatch(soil -> soil.matchesBlock(block))) {
+            return true;
+        }
+
         return FuzzyStack.from(world.getBlockState(pos.down()))
                 .filter(soil -> this.getSoils().stream().anyMatch(e -> e.isVarient(soil)))
                 .isPresent();

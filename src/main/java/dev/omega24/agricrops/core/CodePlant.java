@@ -56,7 +56,7 @@ public class CodePlant implements IAgriPlant {
     public CodePlant(@Nonnull String id, @Nonnull String plantName, @Nonnull List<String> soilIds,
                     int growthStages, @Nonnull RenderMethod renderMethod,
                     @Nonnull IntFunction<ResourceLocation> stageTexture, @Nonnull ResourceLocation seedTexture,
-                    @Nonnull List<ItemStack> products) {
+                    @Nonnull List<ItemStack> products, @Nonnull List<ItemStack> unverifiedSeedItems) {
         this.id = Objects.requireNonNull(id);
         this.plantName = Objects.requireNonNull(plantName);
         this.growthStages = growthStages;
@@ -65,7 +65,17 @@ public class CodePlant implements IAgriPlant {
         this.stageTexture = Objects.requireNonNull(stageTexture);
         this.seedTexture = Objects.requireNonNull(seedTexture);
         this.products = Objects.requireNonNull(products);
-        this.seedItems = Collections.singletonList(new FuzzyStack(new ItemStack(AgriItems.getInstance().AGRI_SEED)));
+
+        // The AGRI_SEED item (properly textured/analyzed once bred/dropped in-mod) stays
+        // primary — getSeed()/harvest-seed-drop always hand out this one. Vanilla/compatible
+        // items (e.g. Items.WHEAT_SEEDS) are accepted *additionally*, same as upstream
+        // AgriCraft: planting one directly on a crop stick works via SeedWrapper resolving it
+        // against this list, but yields an unanalyzed (PlantStats() default) genome — an
+        // "unverified" seed you then have to run through the Seed Analyzer.
+        final List<FuzzyStack> seeds = new java.util.ArrayList<>(unverifiedSeedItems.size() + 1);
+        seeds.add(new FuzzyStack(new ItemStack(AgriItems.getInstance().AGRI_SEED)));
+        unverifiedSeedItems.stream().map(FuzzyStack::new).forEach(seeds::add);
+        this.seedItems = Collections.unmodifiableList(seeds);
 
         final GrowthReqBuilder builder = new GrowthReqBuilder();
         soilIds.stream()
