@@ -72,6 +72,13 @@ public final class CoreHandler {
 
         // Load the JSON files.
         loadJsons();
+
+        // Fork-native baseline soils/plants in code, registered here (not in init()) so
+        // their textures are present in AgriApi's registries before the block-atlas
+        // TextureStitchEvent fires (that event fires before FMLInitializationEvent).
+        // Soils first: plants look up their growth-requirement soils by id at construction.
+        DefaultSoils.register();
+        DefaultPlants.register();
     }
 
     public static void init() {
@@ -112,7 +119,7 @@ public final class CoreHandler {
                 .forEach(AgriApi.getSoilRegistry()::add);
 
         // Fork-native base soils in code (until the data-driven soil registry, design §3).
-        DefaultSoils.register();
+        // Registered earlier in preInit(); see the comment there for why.
 
         // Display Soils
         AgriCore.getLogger("agricrops").info("Registered Soils ({0} total; {1}/{2} valid from JSON):",
@@ -137,6 +144,9 @@ public final class CoreHandler {
                 .filter(AgriPlant::isEnabled)
                 .map(JsonPlant::new)
                 .forEach(AgriApi.getPlantRegistry()::add);
+
+        // Fork-native baseline plants in code (until the species/attribute registries, design §7).
+        // Registered earlier in preInit(); see the comment there for why.
 
         // Display Plants
         AgriCore.getLogger("agricrops").info("Registered Plants ({0}/{1}):", count, raw);
@@ -176,6 +186,25 @@ public final class CoreHandler {
                 .distinct()
                 .map(t -> new ResourceLocation(t))
                 .forEach(consumer);
+
+        // Code-registered plants (DefaultPlants) aren't backed by AgriCore JSON, so their
+        // growth-stage/seed textures need stitching here too.
+        for (IAgriPlant plant : AgriApi.getPlantRegistry().all()) {
+            for (int stage = 0; stage < plant.getGrowthStages(); stage++) {
+                ResourceLocation primary = plant.getPrimaryPlantTexture(stage);
+                if (primary != null) {
+                    consumer.accept(primary);
+                }
+                ResourceLocation secondary = plant.getSecondaryPlantTexture(stage);
+                if (secondary != null) {
+                    consumer.accept(secondary);
+                }
+            }
+            ResourceLocation seed = plant.getSeedTexture();
+            if (seed != null) {
+                consumer.accept(seed);
+            }
+        }
     }
 
 }

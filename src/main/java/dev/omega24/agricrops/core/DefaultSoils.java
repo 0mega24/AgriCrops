@@ -33,6 +33,7 @@ public final class DefaultSoils {
         soil("gravel", "Gravel", Blocks.GRAVEL);
         // Farmland has no item form, so it can't be a FuzzyStack — match it by block identity.
         blockSoil("farmland", "Farmland", Blocks.FARMLAND);
+        soil("soul_sand", "Soul Sand", Blocks.SOUL_SAND);
     }
 
     private static void soil(String id, String name, Block block) {
