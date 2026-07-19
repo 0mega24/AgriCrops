@@ -66,5 +66,12 @@ Getting there needed three fixes beyond the scaffold (all committed):
    to `java.util.Arrays`; and a missing `AgriCommands` import in `IProxy.java` that
    was already broken in upstream's tip commit `d889388a`.
 
-`runClient` has not been launched yet (needs the `shell.nix` FHS natives) — that's
-the next checkpoint (getting-started §4).
+**Runtime load is verified**: a headless `./gradlew runServer` reaches
+`Done! For help` with `agricrops` loaded through all phases (Soils/Plants/Mutations
+register 0/0 — empty, since the upstream default content was dropped). One runtime
+fix was needed beyond the build: `org.reflections` was compile-only so it was
+missing from the jar at load time; its sole use (AgriCore's default-resource jar
+scan) was excised since the fork has no bundled defaults.
+
+`runClient` (a visual client, needs the `shell.nix` FHS natives for a real display)
+is the remaining manual checkpoint (getting-started §4).
