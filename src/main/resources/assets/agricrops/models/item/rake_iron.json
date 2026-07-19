@@ -1,0 +1,6 @@
+{
+	"parent": "agricrops:item/rake",
+	"textures": {
+		"layer0": "agricrops:items/rake_iron"
+	}
+}

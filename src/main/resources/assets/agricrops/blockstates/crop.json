@@ -1,0 +1,19 @@
+{
+	"forge_marker": 1,
+	"defaults": {
+		"model": "agricrops:crop_base",
+		"transform": "forge:default-block",
+		"textures": {}
+	},
+	"variants": {
+		"normal": [{}],
+		"inventory": [{}],
+		"crosscrop": {
+			"true": {
+				"submodel": "agricrops:crop_cross"
+			},
+			"false": {
+			}
+		}
+	}
+}

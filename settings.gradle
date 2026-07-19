@@ -1,4 +1,4 @@
-rootProject.name = 'AgriCraft'
+rootProject.name = 'agricrops'
 include 'AgriCore'
 project(":AgriCore").projectDir = file("lib/AgriCore")
 include 'InfinityLib'

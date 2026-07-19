@@ -1,0 +1,12 @@
+{
+    "parent": "block/cube",
+    "textures": {
+        "down": "agricrops:items/debugger",
+        "up": "agricrops:items/debugger",
+        "north": "agricrops:items/debugger",
+        "east": "agricrops:items/debugger",
+        "south": "agricrops:items/debugger",
+        "west": "agricrops:items/debugger",
+        "particle": "agricrops:items/debugger"
+    }
+}
