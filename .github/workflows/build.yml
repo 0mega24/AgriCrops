@@ -1,0 +1,44 @@
+name: build
+
+# Minimal "does it build on a clean checkout" gate (getting-started §9).
+# NOTE: this is expected to be RED until the ForgeGradle 2.x maven repository
+# URLs in build.gradle are updated — several of the http:// repos that era
+# depended on (the old MinecraftForge maven path, tehnut.info, chickenbones.net,
+# dvs1.progwml6.com, maven.cil.li, ...) are dead or moved to https. Fixing those
+# is the first real build task; see BUILDING.md.
+#
+# Homelab option (getting-started §9): swap `runs-on: ubuntu-latest` for a
+# self-hosted runner label to keep this in-house.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Grant execute on gradlew
+        run: chmod +x ./gradlew
+
+      # ForgeGradle 2.x wants the decomp workspace set up before `build`.
+      - name: setupDecompWorkspace
+        run: ./gradlew setupDecompWorkspace --no-daemon --stacktrace
+
+      - name: build
+        run: ./gradlew build --no-daemon --stacktrace
