@@ -16,6 +16,7 @@ import dev.omega24.agricrops.api.v1.soil.ISoilProfile;
 import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.MethodResult;
+import dev.omega24.agricrops.core.WeedPlant;
 import dev.omega24.agricrops.farming.CropStatCalculator;
 import dev.omega24.agricrops.farming.PlantStats;
 import dev.omega24.agricrops.farming.soil.SoilColumn;
@@ -73,6 +74,18 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     private int growthStage;
     private boolean crossCrop = false;
 
+    /**
+     * Whether this crop is in the destabilizing telegraph window (crop-mod-design.md §8):
+     * risky, but still curable by right-clicking it before {@link #destabilizeExpiry}.
+     */
+    private boolean destabilizing = false;
+
+    /**
+     * The {@link World#getTotalWorldTime()} value at which an uncured {@link #destabilizing}
+     * crop fully converts into a weed.
+     */
+    private long destabilizeExpiry = 0L;
+
     // =========================================================================
     // Event Methods
     // <editor-fold>
@@ -88,6 +101,10 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         // Water/decay the soil column every growth tick, independent of what else happens
         // this tick (mirrors vanilla farmland's own per-random-tick moisture check).
         this.tickMoisture();
+
+        // Roll/advance weed risk every growth tick too, independent of the rest of this
+        // method (crop-mod-design.md §8: "each growth tick, compute weedRisk...").
+        this.tickWeedRisk();
 
         // Otherwise attempt to do something with the event.
         if (this.isCrossCrop() && AgriCraftConfig.crossOverChance > this.getRandom().nextDouble()) {
@@ -507,6 +524,93 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     }
 
     // =========================================================================
+    // Weed risk (crop-mod-design.md §8)
+    // =========================================================================
+    /**
+     * Whether this crop is currently in the destabilizing telegraph window.
+     */
+    public boolean isDestabilizing() {
+        return this.destabilizing;
+    }
+
+    /**
+     * Rolls weed risk (§8) against a stable plant, or checks a destabilizing one for expiry.
+     * A weed itself (see {@link WeedPlant}) never rolls risk again - it's already fully
+     * converted. Runs every growth tick regardless of what else that tick does, same shape as
+     * {@link #tickMoisture()}.
+     */
+    private void tickWeedRisk() {
+        if (!this.hasSeed() || this.isCrossCrop() || this.seed.getPlant().isWeed()) {
+            return;
+        }
+        if (this.destabilizing) {
+            if (this.getWorld().getTotalWorldTime() >= this.destabilizeExpiry) {
+                this.convertToWeed();
+            }
+        } else if (CropStatCalculator.weedRisk(this.seed.getStat()) > this.getRandom().nextDouble()) {
+            this.beginDestabilizing();
+        }
+    }
+
+    /**
+     * Enters the destabilizing telegraph state: a visible tell starts (client reads
+     * {@link #isDestabilizing()} directly off the synced tile, see {@code RenderCrop}), and the
+     * crop has {@link AgriCraftConfig#destabilizingWindowTicks} to be cured before it converts.
+     */
+    private void beginDestabilizing() {
+        this.destabilizing = true;
+        this.destabilizeExpiry = this.getWorld().getTotalWorldTime() + AgriCraftConfig.destabilizingWindowTicks;
+        this.markForUpdate();
+        this.onDestabilizingBegin();
+    }
+
+    /**
+     * Fires whenever a crop begins destabilizing. No-op today - a call-site stub so
+     * crop-mod-design.md §9's OC {@code crop_destabilizing} event can be wired in later
+     * (§11 step 8) without touching the weed-risk logic again.
+     */
+    private void onDestabilizingBegin() {
+        // Intentionally empty - see crop-mod-design.md §9 / §11 step 8.
+    }
+
+    /**
+     * Cures a destabilizing crop back to stable, at the cost of knocking its Growth and
+     * Mutation Chance down slightly (§8: "some cost is worth attaching here... so catching it
+     * isn't entirely free"). Growth stage/progress is untouched - unlike a plant/species
+     * change, curing isn't a new seed.
+     *
+     * @return true if this crop was destabilizing and is now cured.
+     */
+    public boolean cureDestabilizing() {
+        if (this.isRemote() || !this.destabilizing) {
+            return false;
+        }
+        this.destabilizing = false;
+        final IAgriStat stat = this.seed.getStat();
+        final IAgriStat cured = stat
+                .with(CropStat.GROWTH, stat.get(CropStat.GROWTH) - AgriCraftConfig.destabilizeCureCost)
+                .with(CropStat.MUTATION_CHANCE, stat.get(CropStat.MUTATION_CHANCE) - AgriCraftConfig.destabilizeCureCost);
+        this.seed = this.seed.withStat(cured);
+        this.markForUpdate();
+        return true;
+    }
+
+    /**
+     * Full conversion (§8): the destabilizing window expired uncaught, so this crop's plant
+     * becomes an actual weed, carrying its stat genome over (weed spread strength is derived
+     * from whatever Growth/Mutation Chance it converted from, per
+     * {@link CropStatCalculator#weedOvertakes}). Reuses {@link #setSeed(AgriSeed)} so growth
+     * stage resets - the weed has its own growth-stage progression, distinct from whatever
+     * plant it replaced.
+     */
+    private void convertToWeed() {
+        this.destabilizing = false;
+        final IAgriStat carryOver = this.seed.getStat();
+        AgriApi.getPlantRegistry().get(WeedPlant.ID)
+                .ifPresent(weed -> this.setSeed(new AgriSeed(weed, carryOver)));
+    }
+
+    // =========================================================================
     // IWeedable Methods
     // =========================================================================
     public boolean spawn() {
@@ -571,8 +675,14 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     }
 
     public static boolean canOvertake(@Nonnull AgriSeed overtaker, @Nonnull AgriSeed victim, @Nonnull Random rand) {
-        return overtaker.getPlant().isAggressive()
-                && CropStatCalculator.overtakes(overtaker.getStat(), victim.getStat(), rand);
+        if (!overtaker.getPlant().isAggressive()) {
+            return false;
+        }
+        // A weed's spread contest is driven by the Growth/Mutation Chance it converted from
+        // (crop-mod-design.md §8), not its own Resilience like a regular aggressive plant.
+        return overtaker.getPlant().isWeed()
+                ? CropStatCalculator.weedOvertakes(overtaker.getStat(), victim.getStat(), rand)
+                : CropStatCalculator.overtakes(overtaker.getStat(), victim.getStat(), rand);
     }
 
     // =========================================================================
@@ -680,6 +790,8 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         Preconditions.checkNotNull(tag);
         tag.setBoolean(AgriNBT.CROSS_CROP, crossCrop);
         tag.setInteger(AgriNBT.META, growthStage);
+        tag.setBoolean(AgriNBT.DESTABILIZING, destabilizing);
+        tag.setLong(AgriNBT.DESTABILIZE_EXPIRY, destabilizeExpiry);
         if (this.hasSeed()) {
             this.getSeed().getStat().writeToNBT(tag);
             tag.setString(AgriNBT.SEED, this.getSeed().getPlant().getId());
@@ -698,6 +810,8 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         }
         this.growthStage = tag.getInteger(AgriNBT.META);
         this.crossCrop = tag.getBoolean(AgriNBT.CROSS_CROP);
+        this.destabilizing = tag.getBoolean(AgriNBT.DESTABILIZING);
+        this.destabilizeExpiry = tag.getLong(AgriNBT.DESTABILIZE_EXPIRY);
     }
 
     /**
@@ -762,6 +876,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             }
             consumer.accept(" - Fertile: " + this.isFertile());
             consumer.accept(" - Mature: " + this.isMature());
+            consumer.accept(" - Destabilizing: " + this.destabilizing);
             consumer.accept(" - AgriSoil: " + plant.getGrowthRequirement().getSoilCompositions().stream()
                     .findFirst().map(ISoilComposition::getId).orElse("None")
             );

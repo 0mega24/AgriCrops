@@ -65,6 +65,12 @@ public final class DefaultPlants {
         vanillaTextured("nether_wart", "Nether Wart", Collections.singletonList("soul_sand"),
                 3, "nether_wart_stage_", "nether_wart", new ItemStack(Items.NETHER_WART), new ItemStack(Items.NETHER_WART),
                 Collections.singletonList(BiomeDictionary.Type.NETHER), 0, 255);
+
+        // The weed risk/destabilizing conversion target (crop-mod-design.md §8, §11 step 7) -
+        // never planted directly, only ever reached via TileEntityCrop's destabilizing timeout.
+        // Deliberately not given a CropSpecies (crop-mod-design.md §7) - it never participates
+        // in cross-breeding, so the species registry has nothing to add.
+        register(new WeedPlant());
     }
 
     private static void forkTextured(String id, String name, List<String> soils, ItemStack product, ItemStack unverifiedSeed) {

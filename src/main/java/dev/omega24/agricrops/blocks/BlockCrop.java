@@ -120,8 +120,20 @@ public class BlockCrop extends BlockTileCustomRenderedBase<TileEntityCrop> imple
             return false;
         }
 
-        // Step 3. If the player is not holding anything, then harvest the crop.
+        // Step 2.5. If the crop is destabilizing (crop-mod-design.md §8), any right-click
+        // cures it instead of doing whatever that item/empty-hand would otherwise do - "should
+        // always be possible if you catch it in time." Consumes this interaction.
+        if (crop.isDestabilizing()) {
+            crop.cureDestabilizing();
+            return true;
+        }
+
+        // Step 3. If the player is not holding anything, then harvest the crop - unless it's
+        // already a weed (§8 full conversion), which requires a rake (see step 4's exclude list).
         if (heldItem.isEmpty()) {
+            if (crop.hasSeed() && crop.getSeed().getPlant().isWeed()) {
+                return true;
+            }
             crop.onHarvest((stack) -> WorldHelper.spawnItemInWorld(world, pos, stack), player);
             return true;
         }
@@ -169,8 +181,11 @@ public class BlockCrop extends BlockTileCustomRenderedBase<TileEntityCrop> imple
             }
         }
 
-        // Step 8. If we can't do anything else, give up and attempt to harvest instead.
-        crop.onHarvest((stack) -> WorldHelper.spawnItemInWorld(world, pos, stack), player);
+        // Step 8. If we can't do anything else, give up and attempt to harvest instead - unless
+        // it's a weed (§8), which requires a rake, same as step 3.
+        if (!(crop.hasSeed() && crop.getSeed().getPlant().isWeed())) {
+            crop.onHarvest((stack) -> WorldHelper.spawnItemInWorld(world, pos, stack), player);
+        }
 
         //Returning true will prevent other things from happening
         return true;

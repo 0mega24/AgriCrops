@@ -4,6 +4,7 @@ import com.agricraft.agricore.util.TypeHelper;
 import com.google.common.collect.Maps;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.blocks.BlockCrop;
+import dev.omega24.agricrops.reference.AgriCraftConfig;
 import dev.omega24.agricrops.reference.AgriProperties;
 import dev.omega24.agricrops.reference.Constants;
 import dev.omega24.agricrops.tiles.TileEntityCrop;
@@ -19,6 +20,7 @@ import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -43,9 +45,26 @@ public class RenderCrop extends RenderBlockWithTileBase<BlockCrop, TileEntityCro
         return TypeHelper.asList(TEXTURE);
     }
 
+    /**
+     * How often (1-in-N per render call) a destabilizing crop spawns a tell particle - just
+     * frequent enough to be "visually obvious from a glance" (crop-mod-design.md §8) without
+     * drowning the crop stick in smoke.
+     */
+    private static final int DESTABILIZING_PARTICLE_CHANCE = 8;
+
     @Override
     public void renderWorldBlockDynamic(ITessellator tessellator, World world, BlockPos pos, double x, double y, double z,
             BlockCrop block, TileEntityCrop crop, float partialTick, int destroyStage, float alpha) {
+        // Destabilizing tell (crop-mod-design.md §8): reads the tile field directly, same as
+        // getExtendedState does for growth stage/cross-crop - client-side TileEntityCrop copies
+        // are kept in sync via the usual markForUpdate()/readTileNBT round trip.
+        if (!AgriCraftConfig.disableParticles && crop.isDestabilizing() && world.rand.nextInt(DESTABILIZING_PARTICLE_CHANCE) == 0) {
+            world.spawnParticle(EnumParticleTypes.SMOKE_NORMAL,
+                    x + 0.3 + world.rand.nextDouble() * 0.4,
+                    y + 0.5 + world.rand.nextDouble() * 0.5,
+                    z + 0.3 + world.rand.nextDouble() * 0.4,
+                    0.0, 0.02, 0.0);
+        }
     }
 
     @Override

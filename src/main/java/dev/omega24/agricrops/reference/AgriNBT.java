@@ -40,4 +40,7 @@ public interface AgriNBT {
 
     String FLUID_AMOUNT = "agri_fluid_amount";
 
+    String DESTABILIZING = "agri_destabilizing";
+    String DESTABILIZE_EXPIRY = "agri_destabilize_expiry";
+
 }

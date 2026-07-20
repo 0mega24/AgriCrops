@@ -91,6 +91,14 @@ public class AgriCraftConfig {
     @AgriConfigurable(category = AgriConfigCategory.FARMING, key = "Raking weeds drops seeds", comment = "Set to false if you wish to disable seed drops from raking weeds.")
     public static boolean enableRakingSeedDrops = false;
 
+    // Weed risk (crop-mod-design.md §8)
+    @AgriConfigurable(category = AgriConfigCategory.FARMING, key = "Weed risk multiplier", min = "0", max = "5", comment = "Global multiplier on the per-growth-tick weed risk roll (Growth + Mutation Chance - Resilience). Set to 0 to disable weed risk entirely.")
+    public static float weedRiskMultiplier = 0.01f;
+    @AgriConfigurable(category = AgriConfigCategory.FARMING, key = "Destabilizing window ticks", min = "20", max = "24000", comment = "How many ticks a plant spends in the destabilizing telegraph state before it fully converts to a weed, if not cured first.")
+    public static int destabilizingWindowTicks = 2400;
+    @AgriConfigurable(category = AgriConfigCategory.FARMING, key = "Destabilize cure cost", min = "0", max = "63", comment = "How much Growth and Mutation Chance are knocked down (each) when curing a destabilizing plant, so catching it isn't entirely free.")
+    public static int destabilizeCureCost = 5;
+
     // World Generation
     @AgriConfigurable(category = AgriConfigCategory.WORLD, key = "Disable World Gen", comment = "Set to true to disable world gen, no greenhouses will spawn in villages.")
     public static boolean disableWorldGen = false;

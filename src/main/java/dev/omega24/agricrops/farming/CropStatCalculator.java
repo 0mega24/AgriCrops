@@ -12,12 +12,13 @@ import java.util.Random;
  * numbers change, not a code change.").
  *
  * <p>Consumes {@link CropStat#GROWTH}, {@link CropStat#YIELD}, {@link CropStat#RESILIENCE}
- * (now doing double duty: spread contests, per {@link #overtakes(IAgriStat, IAgriStat,
- * Random)}, and softening the biome/elevation penalty, per {@link #habitatFactor(IAgriStat,
- * double)} since §11 step 4), {@link CropStat#FERTILITY_RESPONSE} (§11 step 2), and {@link
- * CropStat#WATER_AFFINITY} (§11 step 3). Light/Temp Tolerance and Mutation Chance still don't
- * have anything to act on yet but are already carried on every genome so plants bred today
- * keep their rolls once those systems land.
+ * (now doing triple duty: spread contests, per {@link #overtakes(IAgriStat, IAgriStat,
+ * Random)}, softening the biome/elevation penalty, per {@link #habitatFactor(IAgriStat,
+ * double)} since §11 step 4, and countering weed risk, per {@link #weedRisk(IAgriStat)} since
+ * §11 step 7), {@link CropStat#FERTILITY_RESPONSE} (§11 step 2), {@link CropStat#WATER_AFFINITY}
+ * (§11 step 3), and {@link CropStat#MUTATION_CHANCE} (§11 step 7, its first consumer). Light/Temp
+ * Tolerance still don't have anything to act on yet but are already carried on every genome so
+ * plants bred today keep their rolls once that system lands.
  */
 public final class CropStatCalculator {
 
@@ -115,6 +116,35 @@ public final class CropStatCalculator {
      */
     public static boolean overtakes(IAgriStat attacker, IAgriStat victim, Random rand) {
         return magnitude(victim, CropStat.RESILIENCE) < magnitude(attacker, CropStat.RESILIENCE) * rand.nextDouble();
+    }
+
+    /**
+     * The chance, per growth tick, that a stable plant rolls into the destabilizing telegraph
+     * state (crop-mod-design.md §8): pushed up by Growth and Mutation Chance, pushed back down
+     * by Resilience — "the only lever that counters weed risk directly, so a plant bred purely
+     * for speed/mutation without also investing in Resilience is supposed to be a ticking time
+     * bomb." Never negative; a plant with high enough Resilience relative to Growth/Mutation
+     * Chance can drive its own risk to zero.
+     */
+    public static double weedRisk(IAgriStat stat) {
+        final double growth = magnitude(stat, CropStat.GROWTH);
+        final double mutation = magnitude(stat, CropStat.MUTATION_CHANCE);
+        final double resilience = magnitude(stat, CropStat.RESILIENCE);
+        final double raw = (growth + mutation - resilience) / CropStat.MAX;
+        return Math.min(1.0, Math.max(0.0, raw) * AgriCraftConfig.weedRiskMultiplier);
+    }
+
+    /**
+     * Whether a newly-formed weed overtakes a neighboring crop while spreading (§8): unlike
+     * {@link #overtakes(IAgriStat, IAgriStat, Random)}, the attacking side's strength is derived
+     * from the Growth/Mutation Chance the weed converted from (carried over on its genome, per
+     * §8: "spread strength derived from whatever Growth/Mutation Chance the weed converted
+     * from"), not its own Resilience — a weed's spread doesn't get gentler just because it also
+     * happened to have decent Resilience.
+     */
+    public static boolean weedOvertakes(IAgriStat weed, IAgriStat victim, Random rand) {
+        final double strength = magnitude(weed, CropStat.GROWTH) + magnitude(weed, CropStat.MUTATION_CHANCE);
+        return magnitude(victim, CropStat.RESILIENCE) < strength * rand.nextDouble();
     }
 
     /**
