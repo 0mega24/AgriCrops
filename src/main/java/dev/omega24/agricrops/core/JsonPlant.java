@@ -241,13 +241,13 @@ public class JsonPlant implements IAgriPlant {
             return builder.build();
         }
 
-        if (plant.getRequirement().getSoils().isEmpty()) {
-            AgriCore.getLogger("agricrops").warn("Plant: \"{0}\" has no valid soils to plant on!", plant.getPlantName());
+        // Legacy AgriCore JSON soil definitions have no fork-native mapping onto the
+        // ISoilComposition registry (design §3) — an unrestricted growth requirement (any
+        // registered soil profile accepted) is the closest equivalent. In practice this
+        // branch is unreachable: the fork has no JSON plant definitions (see DefaultPlants).
+        if (!plant.getRequirement().getSoils().isEmpty()) {
+            AgriCore.getLogger("agricrops").warn("Plant: \"{0}\" has legacy JSON soil restrictions, which are no longer supported!", plant.getPlantName());
         }
-
-        plant.getRequirement().getSoils().stream()
-                .map(JsonSoil::new)
-                .forEach(builder::addSoil);
 
         plant.getRequirement().getConditions().forEach(obj -> {
             final Optional<FuzzyStack> stack = obj.toStack(FuzzyStack.class);

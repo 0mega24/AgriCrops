@@ -7,6 +7,7 @@ import dev.omega24.agricrops.api.v1.requirement.IGrowthRequirement;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -18,6 +19,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -128,6 +130,44 @@ public interface IAgriPlant extends IAgriRegisterable {
      * @return The growth bonus of the plant.
      */
     double getGrowthChanceBonus();
+
+    /**
+     * The {@link BiomeDictionary.Type} tags this plant prefers to grow in, per
+     * crop-mod-design.md §5 ("biome dictionary tags rather than hardcoded biomes, so it
+     * composes with GTNH's biome mods"). An empty collection (the default) means the plant is
+     * a biome generalist — no bonus and no penalty regardless of the biome it's planted in.
+     * Otherwise, growing in a biome tagged with any of these gets the full biome bonus;
+     * growing outside all of them takes a penalty, softened by {@code CropStat.RESILIENCE}.
+     *
+     * @return The plant's preferred biome dictionary tags, or empty for no preference.
+     */
+    @Nonnull
+    default Collection<BiomeDictionary.Type> getPreferredBiomeTypes() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * The lowest world Y coordinate of this plant's optimal elevation band. Growing within
+     * {@link #getOptimalElevationMin()}..{@link #getOptimalElevationMax()} gets the full
+     * elevation bonus; growing outside it takes a penalty that scales with distance from the
+     * nearest edge of the band, softened by {@code CropStat.RESILIENCE}, per
+     * crop-mod-design.md §5. Defaults (0..255) span the whole build range, i.e. no preference.
+     *
+     * @return The minimum Y of the plant's optimal elevation band.
+     */
+    default int getOptimalElevationMin() {
+        return 0;
+    }
+
+    /**
+     * The highest world Y coordinate of this plant's optimal elevation band. See
+     * {@link #getOptimalElevationMin()}.
+     *
+     * @return The maximum Y of the plant's optimal elevation band.
+     */
+    default int getOptimalElevationMax() {
+        return 255;
+    }
 
     /**
      * Retrieves the base seed drop chance of the given plant. The seed drop chance bonus (from

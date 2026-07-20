@@ -7,7 +7,7 @@ import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.seed.IAgriSeedAcceptor;
 import dev.omega24.agricrops.api.v1.seed.IAgriSeedProvider;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfile;
 import dev.omega24.agricrops.api.v1.util.MethodResult;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -90,7 +90,7 @@ public interface IAgriCrop extends IAgriSeedProvider, IAgriSeedAcceptor, IAgriFe
     boolean isMature();
 
     @Nonnull
-    Optional<IAgriSoil> getSoil();
+    Optional<ISoilProfile> getSoilProfile();
 
     // =========================================================================
     // IHarvestable Defaults

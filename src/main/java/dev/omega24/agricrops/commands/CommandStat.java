@@ -24,6 +24,7 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -116,12 +117,19 @@ public class CommandStat implements ICommand {
                 MessageUtil.messagePlayer(player, "{0}: {1} -> {2}", cropStat.getId(), stat.get(cropStat), value);
                 stat = stat.with(cropStat, value);
             }
+            writeStat(stack, stat);
             return;
         }
         final CropStat cropStat = findStat(target)
                 .orElseThrow(() -> new CommandException("Invalid target: \"{0}\"!", target));
         MessageUtil.messagePlayer(player, "{0}: {1} -> {2}", cropStat.getId(), stat.get(cropStat), value);
-        stat.with(cropStat, value);
+        writeStat(stack, stat.with(cropStat, value));
+    }
+
+    private void writeStat(@Nonnull ItemStack stack, @Nonnull IAgriStat stat) {
+        final NBTTagCompound tag = stack.hasTagCompound() ? stack.getTagCompound() : new NBTTagCompound();
+        stat.writeToNBT(tag);
+        stack.setTagCompound(tag);
     }
 
     private void getStat(@Nonnull EntityPlayer player, @Nonnull ItemStack stack, @Nonnull IAgriStat stat, @Nonnull String target) throws CommandException {

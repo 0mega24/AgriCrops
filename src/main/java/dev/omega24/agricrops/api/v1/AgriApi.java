@@ -10,7 +10,8 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutationEngine;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutationRegistry;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoilRegistry;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import java.lang.reflect.Constructor;
@@ -74,16 +75,30 @@ public final class AgriApi {
     }
 
     /**
-     * Fetches the AgriCraft Soil Registry.
+     * Fetches the AgriCraft Soil Profile Registry (Block/IBlockState → {@code ISoilProfile}),
+     * per crop-mod-design.md §3.
      * <p>
      * Notice: This method will throw an {@link OperationNotSupportedException} if the corresponding
      * version of AgriCraft is not currently installed.
      *
-     * @return the AgriCraft Soil Registry.
+     * @return the AgriCraft Soil Profile Registry.
      */
     @Nonnull
-    public static IAgriSoilRegistry getSoilRegistry() {
-        return AgriApi.CONNECTOR.connectSoilRegistry();
+    public static ISoilProfileRegistry getSoilProfileRegistry() {
+        return AgriApi.CONNECTOR.connectSoilProfileRegistry();
+    }
+
+    /**
+     * Fetches the AgriCraft Soil Composition tag registry, per crop-mod-design.md §3.
+     * <p>
+     * Notice: This method will throw an {@link OperationNotSupportedException} if the corresponding
+     * version of AgriCraft is not currently installed.
+     *
+     * @return the AgriCraft Soil Composition Registry.
+     */
+    @Nonnull
+    public static IAgriRegistry<ISoilComposition> getSoilCompositionRegistry() {
+        return AgriApi.CONNECTOR.connectSoilCompositionRegistry();
     }
 
     /**

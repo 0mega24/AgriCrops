@@ -15,7 +15,7 @@ public class MethodGetNeededSoil extends MethodBaseGrowthReq {
     }
 
     private Optional<String> getMainSoil(IAgriPlant plant) {
-        return plant.getGrowthRequirement().getSoils().stream()
+        return plant.getGrowthRequirement().getSoilCompositions().stream()
                 .findFirst()
                 .map(s -> s.getName());
     }

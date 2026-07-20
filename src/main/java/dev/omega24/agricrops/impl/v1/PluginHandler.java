@@ -14,7 +14,8 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutationEngine;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutationRegistry;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import java.util.ArrayList;
@@ -50,7 +51,8 @@ public final class PluginHandler {
     }
 
     public static void postInit() {
-        registerSoils(AgriApi.getSoilRegistry());
+        registerSoilCompositions(AgriApi.getSoilCompositionRegistry());
+        registerSoilProfiles(AgriApi.getSoilProfileRegistry());
         registerPlants(AgriApi.getPlantRegistry());
         registerMutations(AgriApi.getMutationRegistry());
         registerStats(AgriApi.getStatRegistry());
@@ -65,8 +67,12 @@ public final class PluginHandler {
         PLUGINS.stream().filter(IAgriPlugin::isEnabled).forEach((p) -> p.registerTextures(registry));
     }
 
-    public static void registerSoils(IAgriRegistry<IAgriSoil> soilRegistry) {
-        PLUGINS.stream().filter(IAgriPlugin::isEnabled).forEach((p) -> p.registerSoils(soilRegistry));
+    public static void registerSoilCompositions(IAgriRegistry<ISoilComposition> soilCompositionRegistry) {
+        PLUGINS.stream().filter(IAgriPlugin::isEnabled).forEach((p) -> p.registerSoilCompositions(soilCompositionRegistry));
+    }
+
+    public static void registerSoilProfiles(ISoilProfileRegistry soilProfileRegistry) {
+        PLUGINS.stream().filter(IAgriPlugin::isEnabled).forEach((p) -> p.registerSoilProfiles(soilProfileRegistry));
     }
 
     public static void registerPlants(IAgriRegistry<IAgriPlant> plantRegistry) {

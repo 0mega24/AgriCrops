@@ -2,7 +2,7 @@
  */
 package dev.omega24.agricrops.api.v1.requirement;
 
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
 import dev.omega24.agricrops.api.v1.util.BlockRange;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import net.minecraft.util.math.BlockPos;
@@ -13,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
 @Deprecated
 public interface IGrowthReqBuilder {
 
-    IGrowthReqBuilder addSoil(IAgriSoil soil);
+    IGrowthReqBuilder addSoilComposition(ISoilComposition composition);
 
     IGrowthReqBuilder addCondition(ICondition condition);
 

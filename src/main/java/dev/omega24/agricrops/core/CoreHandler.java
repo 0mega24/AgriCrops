@@ -5,12 +5,11 @@ import com.agricraft.agricore.core.AgriCore;
 import com.agricraft.agricore.json.AgriLoader;
 import com.agricraft.agricore.plant.AgriMutation;
 import com.agricraft.agricore.plant.AgriPlant;
-import com.agricraft.agricore.plant.AgriSoil;
 import com.agricraft.agricore.util.ResourceHelper;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.handler.SoilColumnCapabilityHandler;
 import dev.omega24.agricrops.reference.Reference;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -73,11 +72,16 @@ public final class CoreHandler {
         // Load the JSON files.
         loadJsons();
 
+        // Soil column capability (design §3): register before anything can touch it.
+        SoilColumnCapabilityHandler.register();
+
         // Fork-native baseline soils/plants in code, registered here (not in init()) so
         // their textures are present in AgriApi's registries before the block-atlas
         // TextureStitchEvent fires (that event fires before FMLInitializationEvent).
-        // Soils first: plants look up their growth-requirement soils by id at construction.
-        DefaultSoils.register();
+        // Composition tags and soil profiles first: plants look up their growth-requirement
+        // soil compositions by id at construction.
+        DefaultSoilCompositions.register();
+        DefaultSoilProfiles.register();
         DefaultPlants.register();
     }
 
@@ -86,7 +90,6 @@ public final class CoreHandler {
         AgriCore.getConfig().save();
 
         // Load JSON Stuff
-        initSoils();
         initPlants();
         initMutations();
     }
@@ -96,37 +99,10 @@ public final class CoreHandler {
         AgriCore.getLogger("agricrops").info("Attempting to read AgriCraft JSONs!");
         AgriLoader.loadDirectory(
                 defaultDir,
-                AgriCore.getSoils(),
                 AgriCore.getPlants(),
                 AgriCore.getMutations()
         );
         AgriCore.getLogger("agricrops").info("Finished trying to read AgriCraft JSONs!");
-    }
-
-    public static void initSoils() {
-        // Announce Progress
-        AgriCore.getLogger("agricrops").info("Registering Soils!");
-
-        // See if soils are valid...
-        final int raw = AgriCore.getSoils().getAll().size();
-        AgriCore.getSoils().validate();
-        final int count = AgriCore.getSoils().getAll().size();
-
-        // Transfer
-        AgriCore.getSoils().getAll().stream()
-                .filter(AgriSoil::isEnabled)
-                .map(JsonSoil::new)
-                .forEach(AgriApi.getSoilRegistry()::add);
-
-        // Fork-native base soils in code (until the data-driven soil registry, design §3).
-        // Registered earlier in preInit(); see the comment there for why.
-
-        // Display Soils
-        AgriCore.getLogger("agricrops").info("Registered Soils ({0} total; {1}/{2} valid from JSON):",
-                AgriApi.getSoilRegistry().all().size(), count, raw);
-        for (IAgriSoil soil : AgriApi.getSoilRegistry().all()) {
-            AgriCore.getLogger("agricrops").info(" - {0}", soil.getName());
-        }
     }
 
     public static void initPlants() {

@@ -4,11 +4,11 @@
 package dev.omega24.agricrops.compat.jei.produce;
 
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
+import dev.omega24.agricrops.compat.jei.JeiSoilHelper;
 import java.util.ArrayList;
 import java.util.List;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.BlankRecipeWrapper;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -32,12 +32,7 @@ public class ProduceRecipeWrapper extends BlankRecipeWrapper {
         input.add(recipe.getSeed());
 
         // Add Required Soil to Input List
-        input.add(recipe.getGrowthRequirement().getSoils().stream()
-                .flatMap(s -> s.getVarients().stream())
-                .findFirst()
-                .map(s -> s.toStack())
-                .orElse(new ItemStack(Blocks.FARMLAND))
-        );
+        input.add(JeiSoilHelper.representativeStacks(recipe.getGrowthRequirement()).get(0));
 
         // Add Representative Growth Requirement Stack to Input List
         recipe.getGrowthRequirement().getConditionStack()

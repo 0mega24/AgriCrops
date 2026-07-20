@@ -10,12 +10,15 @@ import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;
 import dev.omega24.agricrops.api.v1.misc.IAgriDisplayable;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfile;
 import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.MethodResult;
 import dev.omega24.agricrops.farming.CropStatCalculator;
 import dev.omega24.agricrops.farming.PlantStats;
+import dev.omega24.agricrops.farming.soil.SoilColumn;
+import dev.omega24.agricrops.farming.soil.SoilColumnHelper;
 import dev.omega24.agricrops.init.AgriItems;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import dev.omega24.agricrops.reference.AgriNBT;
@@ -24,8 +27,10 @@ import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.utility.MessageUtil;
 import com.infinityraider.infinitylib.utility.WorldHelper;
 import com.infinityraider.infinitylib.utility.debug.IDebuggable;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,10 +43,30 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebuggable, IAgriDisplayable {
+
+    /**
+     * Nutrients drained from the soil column per successful growth tick. Placeholder
+     * balance number, like the rest of the growth math it feeds into.
+     */
+    private static final int GROWTH_TICK_NUTRIENT_DRAIN = 1;
+
+    /**
+     * Moisture added to the soil column, per growth tick, when a water source is found
+     * nearby (crop-mod-design.md §4/§11 step 3). Placeholder balance number.
+     */
+    private static final int MOISTURE_TOPUP_AMOUNT = 25;
+
+    /**
+     * Base moisture decay per growth tick, before the soil column's moisture-retention rate
+     * softens it. Placeholder balance number.
+     */
+    private static final int MOISTURE_DECAY_AMOUNT = 2;
 
     private AgriSeed seed;
     private int growthStage;
@@ -59,6 +84,10 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             return MethodResult.PASS;
         }
 
+        // Water/decay the soil column every growth tick, independent of what else happens
+        // this tick (mirrors vanilla farmland's own per-random-tick moisture check).
+        this.tickMoisture();
+
         // Otherwise attempt to do something with the event.
         if (this.isCrossCrop() && AgriCraftConfig.crossOverChance > this.getRandom().nextDouble()) {
             this.crossOver();
@@ -69,7 +98,10 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         } else if (this.isMature()) {
             this.spread();
             return MethodResult.SUCCESS;
-        } else if (CropStatCalculator.growthTickChance(this.seed.getPlant(), this.seed.getStat()) > this.getRandom().nextDouble()) {
+        } else if (CropStatCalculator.growthTickChance(this.seed.getPlant(), this.seed.getStat(),
+                this.nutrientSatisfaction(), this.moistureSatisfaction(), this.habitatSatisfaction()) > this.getRandom().nextDouble()) {
+            SoilColumnHelper.getOrCreateColumn(this.getWorld(), this.pos.down())
+                    .ifPresent(column -> column.drainNutrients(GROWTH_TICK_NUTRIENT_DRAIN));
             this.applyGrowthTick();
             return MethodResult.SUCCESS;
         }
@@ -361,9 +393,92 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
 
     @Override
     @Nonnull
-    public Optional<IAgriSoil> getSoil() {
+    public Optional<ISoilProfile> getSoilProfile() {
         final IBlockState state = this.getWorld().getBlockState(this.pos.down());
-        return AgriApi.getSoilRegistry().get(state);
+        return AgriApi.getSoilProfileRegistry().get(state);
+    }
+
+    /**
+     * The soil column's current nutrients as a fraction of its capacity, or 1.0 if there's
+     * no column to read yet (soil not yet touched by a growth tick or fertilizer).
+     */
+    private double nutrientSatisfaction() {
+        return SoilColumnHelper.getOrCreateColumn(this.getWorld(), this.pos.down())
+                .filter(column -> column.getNutrientCapacity() > 0)
+                .map(column -> (double) column.getNutrients() / column.getNutrientCapacity())
+                .orElse(1.0);
+    }
+
+    /**
+     * The soil column's current moisture as a fraction of {@link SoilColumn#MAX_MOISTURE},
+     * or the neutral baseline (0.5) if there's no column to read yet.
+     */
+    private double moistureSatisfaction() {
+        return SoilColumnHelper.getOrCreateColumn(this.getWorld(), this.pos.down())
+                .map(column -> (double) column.getMoisture() / SoilColumn.MAX_MOISTURE)
+                .orElse(0.5);
+    }
+
+    /**
+     * How far outside the plant's optimal elevation band (crop-mod-design.md §5) growth
+     * chance keeps tapering down before {@link CropStatCalculator}'s Resilience-softened floor
+     * takes over entirely. Placeholder balance number.
+     */
+    private static final double ELEVATION_FALLOFF = 24.0;
+
+    /**
+     * How well the crop's current biome and elevation match its plant's preferences (0..1,
+     * average of the two independent satisfactions), per crop-mod-design.md §5. A plant with
+     * no preference for either is always fully satisfied.
+     */
+    private double habitatSatisfaction() {
+        final IAgriPlant plant = this.seed.getPlant();
+        return (this.biomeSatisfaction(plant) + this.elevationSatisfaction(plant)) / 2.0;
+    }
+
+    /**
+     * 1.0 if the plant has no preferred biome tags, or if the crop's current biome carries any
+     * of them; 0.0 otherwise (softened later by Resilience in {@link CropStatCalculator}).
+     */
+    private double biomeSatisfaction(IAgriPlant plant) {
+        final Collection<BiomeDictionary.Type> preferred = plant.getPreferredBiomeTypes();
+        if (preferred.isEmpty()) {
+            return 1.0;
+        }
+        final Biome biome = this.getWorld().getBiome(this.pos);
+        final Set<BiomeDictionary.Type> actual = BiomeDictionary.getTypes(biome);
+        return actual.stream().anyMatch(preferred::contains) ? 1.0 : 0.0;
+    }
+
+    /**
+     * 1.0 inside the plant's optimal elevation band, tapering linearly to 0.0 at
+     * {@link #ELEVATION_FALLOFF} blocks past the nearest edge of that band.
+     */
+    private double elevationSatisfaction(IAgriPlant plant) {
+        final int y = this.pos.getY();
+        final int min = plant.getOptimalElevationMin();
+        final int max = plant.getOptimalElevationMax();
+        if (y >= min && y <= max) {
+            return 1.0;
+        }
+        final int distance = y < min ? min - y : y - max;
+        return Math.max(0.0, 1.0 - distance / ELEVATION_FALLOFF);
+    }
+
+    /**
+     * Tops up the soil column's moisture if a water source is nearby, then applies the
+     * per-tick decay (softened by the soil's moisture retention). Runs every growth tick
+     * regardless of what else happens that tick, per crop-mod-design.md §4.
+     */
+    private void tickMoisture() {
+        final BlockPos soilPos = this.pos.down();
+        SoilColumnHelper.getOrCreateColumn(this.getWorld(), soilPos).ifPresent(column -> {
+            if (SoilColumnHelper.hasNearbyWaterSource(this.getWorld(), soilPos)) {
+                column.addMoisture(MOISTURE_TOPUP_AMOUNT);
+            }
+            final float retention = this.getSoilProfile().map(ISoilProfile::getMoistureRetention).orElse(0.0f);
+            column.decayMoisture(retention, MOISTURE_DECAY_AMOUNT);
+        });
     }
 
     // =========================================================================
@@ -619,8 +734,8 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             }
             consumer.accept(" - Fertile: " + this.isFertile());
             consumer.accept(" - Mature: " + this.isMature());
-            consumer.accept(" - AgriSoil: " + plant.getGrowthRequirement().getSoils().stream()
-                    .findFirst().map(IAgriSoil::getId).orElse("None")
+            consumer.accept(" - AgriSoil: " + plant.getGrowthRequirement().getSoilCompositions().stream()
+                    .findFirst().map(ISoilComposition::getId).orElse("None")
             );
         } else {
             consumer.accept(" - This crop has no plant");
@@ -641,7 +756,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         Preconditions.checkNotNull(information);
 
         // Add Soil Information
-        information.accept(AgriCore.getTranslator().translate("agricrops_tooltip.soil") + ": " + this.getSoil().map(IAgriSoil::getName).orElse("Unknown"));
+        information.accept(AgriCore.getTranslator().translate("agricrops_tooltip.soil") + ": " + this.getSoilProfile().map(p -> p.getComposition().getName()).orElse("Unknown"));
 
         if (this.hasSeed()) {
             // Fetch the plant.

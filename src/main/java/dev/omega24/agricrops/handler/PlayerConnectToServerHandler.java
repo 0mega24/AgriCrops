@@ -4,10 +4,8 @@ import com.agricraft.agricore.core.AgriCore;
 import com.agricraft.agricore.log.AgriLogger;
 import com.agricraft.agricore.plant.AgriMutation;
 import com.agricraft.agricore.plant.AgriPlant;
-import com.agricraft.agricore.plant.AgriSoil;
 import dev.omega24.agricrops.network.json.MessageSyncMutationJson;
 import dev.omega24.agricrops.network.json.MessageSyncPlantJson;
-import dev.omega24.agricrops.network.json.MessageSyncSoilJson;
 import java.util.Iterator;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -21,21 +19,8 @@ public class PlayerConnectToServerHandler {
     @SuppressWarnings("unused")
     public void onConnect(PlayerEvent.PlayerLoggedInEvent event) {
         EntityPlayerMP player = (EntityPlayerMP) event.player;
-        syncSoils(player);
         syncPlants(player);
         syncMutations(player);
-    }
-
-    private void syncSoils(EntityPlayerMP player) {
-        LOG.debug("Sending soils to player: " + player.getDisplayNameString());
-        final int count = AgriCore.getSoils().getAll().size();
-        Iterator<AgriSoil> it = AgriCore.getSoils().getAll().iterator();
-        for (int i = 0; it.hasNext(); i++) {
-            AgriSoil soil = it.next();
-            LOG.debug("Sending Soil: {0} ({1} of {2})", soil, i + 1, count);
-            new MessageSyncSoilJson(soil, i, count).sendTo(player);
-        }
-        LOG.debug("Finished sending soils to player: " + player.getDisplayNameString());
     }
 
     private void syncPlants(EntityPlayerMP player) {

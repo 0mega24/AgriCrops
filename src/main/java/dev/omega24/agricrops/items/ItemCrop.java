@@ -50,7 +50,7 @@ public class ItemCrop extends ItemBase implements IItemWithModel {
         }
 
         // Test if soil is valid.
-        if (!AgriApi.getSoilRegistry().contains(world.getBlockState(cropPos.down()))) {
+        if (!AgriApi.getSoilProfileRegistry().get(world.getBlockState(cropPos.down())).isPresent()) {
             return EnumActionResult.FAIL;
         }
 

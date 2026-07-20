@@ -12,7 +12,8 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutationEngine;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutationRegistry;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoilRegistry;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import javax.annotation.Nonnull;
@@ -28,7 +29,9 @@ public class AgriApiConnector implements IAgriApiConnector {
     @Nonnull
     private final IAgriMutationRegistry mutationRegistry;
     @Nonnull
-    private final IAgriSoilRegistry soilRegistry;
+    private final ISoilProfileRegistry soilProfileRegistry;
+    @Nonnull
+    private final IAgriRegistry<ISoilComposition> soilCompositionRegistry;
     @Nonnull
     private final IAgriAdapterizer<IAgriStat> statRegistry;
     @Nonnull
@@ -45,7 +48,8 @@ public class AgriApiConnector implements IAgriApiConnector {
     public AgriApiConnector() {
         this.plantRegistry = new AgriRegistry<>();
         this.mutationRegistry = new AgriMutationRegistry();
-        this.soilRegistry = new AgriSoilRegistry();
+        this.soilProfileRegistry = new SoilProfileRegistry();
+        this.soilCompositionRegistry = new AgriRegistry<>();
         this.statRegistry = new AgriAdapterizer<>();
         this.statCalculatorRegistry = new AgriAdapterizer<>();
         this.mutationEngine = new AgriMutationEngine();
@@ -74,8 +78,14 @@ public class AgriApiConnector implements IAgriApiConnector {
 
     @Override
     @Nonnull
-    public IAgriSoilRegistry connectSoilRegistry() {
-        return this.soilRegistry;
+    public ISoilProfileRegistry connectSoilProfileRegistry() {
+        return this.soilProfileRegistry;
+    }
+
+    @Override
+    @Nonnull
+    public IAgriRegistry<ISoilComposition> connectSoilCompositionRegistry() {
+        return this.soilCompositionRegistry;
     }
 
     @Override

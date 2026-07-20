@@ -10,7 +10,8 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutationEngine;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutationRegistry;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoilRegistry;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import javax.annotation.Nonnull;
@@ -33,7 +34,10 @@ public interface IAgriApiConnector {
     IAgriMutationRegistry connectMutationRegistry();
 
     @Nonnull
-    IAgriSoilRegistry connectSoilRegistry();
+    ISoilProfileRegistry connectSoilProfileRegistry();
+
+    @Nonnull
+    IAgriRegistry<ISoilComposition> connectSoilCompositionRegistry();
 
     @Nonnull
     IAgriAdapterizer<IAgriStat> connectStatRegistry();

@@ -12,8 +12,8 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutationEngine;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutationRegistry;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoilRegistry;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import java.util.function.Consumer;
@@ -43,7 +43,9 @@ import net.minecraft.util.ResourceLocation;
  * out-of-order cross-references between the registries (i.e. plants depend on soils, therefore
  * soils must be registered first). The registration order is as follows:
  * <ol>
- * <li> All {@link IAgriSoil}s are registered using {@link #registerSoils(IAgriSoilRegistry)}
+ * <li> All {@link ISoilComposition}s and {@link dev.omega24.agricrops.api.v1.soil.ISoilProfile}s
+ * are registered using {@link #registerSoilCompositions(IAgriRegistry)} and
+ * {@link #registerSoilProfiles(ISoilProfileRegistry)}
  * <li> All {@link IAgriPlant}s are registered using {@link #registerPlants(IAgriPlantRegistry)}
  * <li> All {@link IAgriMutation}s are registered using
  * {@link #registerMutations(IAgriMutationRegistry)}
@@ -70,7 +72,11 @@ public interface IAgriPlugin {
         // Default Implementation: Do nothing.
     }
 
-    default void registerSoils(@Nonnull IAgriRegistry<IAgriSoil> soilRegistry) {
+    default void registerSoilCompositions(@Nonnull IAgriRegistry<ISoilComposition> soilCompositionRegistry) {
+        // Default Implementation: Do nothing.
+    }
+
+    default void registerSoilProfiles(@Nonnull ISoilProfileRegistry soilProfileRegistry) {
         // Default Implementation: Do nothing.
     }
 

@@ -4,6 +4,7 @@
 package dev.omega24.agricrops.compat.jei.mutation;
 
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
+import dev.omega24.agricrops.compat.jei.JeiSoilHelper;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +12,6 @@ import java.util.List;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.BlankRecipeWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -36,22 +36,8 @@ public class MutationRecipeWrapper extends BlankRecipeWrapper {
                 .map(Arrays::asList)
                 .forEach(input::add);
 
-        // Setup Soil List
-        final List<ItemStack> soils = new ArrayList<>();
-
-        // Add Soils to List
-        recipe.getChild().getGrowthRequirement().getSoils().stream()
-                .flatMap(s -> s.getVarients().stream())
-                .map(s -> s.toStack())
-                .forEach(soils::add);
-
-        // Add Farmland if no Soils
-        if (soils.isEmpty()) {
-            soils.add(new ItemStack(Blocks.FARMLAND));
-        }
-
         // Add Soil List to Master List
-        input.add(soils);
+        input.add(JeiSoilHelper.representativeStacks(recipe.getChild().getGrowthRequirement()));
 
         // Add Condition to List
         recipe.getChild().getGrowthRequirement().getConditionStack()

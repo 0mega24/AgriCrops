@@ -3,7 +3,6 @@
 package dev.omega24.agricrops.items.modes;
 
 import dev.omega24.agricrops.api.v1.AgriApi;
-import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import com.infinityraider.infinitylib.utility.MessageUtil;
 import com.infinityraider.infinitylib.utility.debug.DebugMode;
 import net.minecraft.entity.EntityLivingBase;
@@ -28,11 +27,8 @@ public class DebugModeCheckSoil extends DebugMode {
 
     @Override
     public void debugActionBlockClicked(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
-        FuzzyStack soil = FuzzyStack.from(world.getBlockState(pos)).orElse(null);
-        String type = AgriApi.getSoilRegistry().all().stream()
-                .filter(s -> s.isVarient(soil))
-                .map(s -> s.getName())
-                .findFirst()
+        String type = AgriApi.getSoilProfileRegistry().get(world.getBlockState(pos))
+                .map(p -> p.getComposition().getName())
                 .orElse("Unknown Soil");
         MessageUtil.messagePlayer(player, "{0} Soil Info:", FMLCommonHandler.instance().getSide());
         MessageUtil.messagePlayer(player, " - Soil Type: \"{0}\"", type);

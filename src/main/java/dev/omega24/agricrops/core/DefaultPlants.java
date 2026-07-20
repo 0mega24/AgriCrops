@@ -13,9 +13,10 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.BiomeDictionary;
 
 /**
- * Fork-native baseline plants, registered in code (mirrors {@link DefaultSoils}).
+ * Fork-native baseline plants, registered in code (mirrors {@link DefaultSoilProfiles}).
  *
  * <p>The upstream AgriCraft default plant JSONs (AgriPlants) were dropped for good in
  * the hard fork. Until the design's species/attribute registries land
@@ -38,42 +39,63 @@ public final class DefaultPlants {
     }
 
     public static void register() {
+        // Biome/elevation preferences (crop-mod-design.md §5) given only to the two plants
+        // where vanilla itself already implies a habitat (desert cactus, Nether wart) — the
+        // rest stay generalists (empty preference, full elevation range), same as their
+        // vanilla farmland behavior.
         forkTextured("cactus", "Cactus", Collections.singletonList("sand"),
                 new ItemStack(Item.getItemFromBlock(Blocks.CACTUS)),
-                new ItemStack(Item.getItemFromBlock(Blocks.CACTUS)));
-        forkTextured("carrot", "Carrot", Collections.singletonList("farmland"),
+                new ItemStack(Item.getItemFromBlock(Blocks.CACTUS)),
+                Arrays.asList(BiomeDictionary.Type.SANDY, BiomeDictionary.Type.DRY), 60, 90);
+        forkTextured("carrot", "Carrot", Collections.singletonList("tilled"),
                 new ItemStack(Items.CARROT), new ItemStack(Items.CARROT));
-        forkTextured("potato", "Potato", Collections.singletonList("farmland"),
+        forkTextured("potato", "Potato", Collections.singletonList("tilled"),
                 new ItemStack(Items.POTATO), new ItemStack(Items.POTATO));
-        forkTextured("sugarcane", "Sugar Cane", Arrays.asList("sand", "dirt", "grass", "farmland"),
+        forkTextured("sugarcane", "Sugar Cane", Arrays.asList("sand", "dirt", "grass", "tilled"),
                 new ItemStack(Items.REEDS), new ItemStack(Items.REEDS));
-        forkTextured("melon", "Melon", Arrays.asList("farmland", "dirt", "grass"),
+        forkTextured("melon", "Melon", Arrays.asList("tilled", "dirt", "grass"),
                 new ItemStack(Items.MELON), new ItemStack(Items.MELON_SEEDS));
-        forkTextured("pumpkin", "Pumpkin", Arrays.asList("farmland", "dirt", "grass"),
+        forkTextured("pumpkin", "Pumpkin", Arrays.asList("tilled", "dirt", "grass"),
                 new ItemStack(Item.getItemFromBlock(Blocks.PUMPKIN)), new ItemStack(Items.PUMPKIN_SEEDS));
 
-        vanillaTextured("wheat", "Wheat", Collections.singletonList("farmland"),
+        vanillaTextured("wheat", "Wheat", Collections.singletonList("tilled"),
                 8, "wheat_stage", "wheat_seeds", new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT_SEEDS));
-        vanillaTextured("beetroot", "Beetroot", Collections.singletonList("farmland"),
+        vanillaTextured("beetroot", "Beetroot", Collections.singletonList("tilled"),
                 4, "beetroots_stage", "beetroot_seeds", new ItemStack(Items.BEETROOT), new ItemStack(Items.BEETROOT_SEEDS));
         vanillaTextured("nether_wart", "Nether Wart", Collections.singletonList("soul_sand"),
-                3, "nether_wart_stage_", "nether_wart", new ItemStack(Items.NETHER_WART), new ItemStack(Items.NETHER_WART));
+                3, "nether_wart_stage_", "nether_wart", new ItemStack(Items.NETHER_WART), new ItemStack(Items.NETHER_WART),
+                Collections.singletonList(BiomeDictionary.Type.NETHER), 0, 255);
     }
 
     private static void forkTextured(String id, String name, List<String> soils, ItemStack product, ItemStack unverifiedSeed) {
+        forkTextured(id, name, soils, product, unverifiedSeed, Collections.emptyList(), 0, 255);
+    }
+
+    private static void forkTextured(String id, String name, List<String> soils, ItemStack product, ItemStack unverifiedSeed,
+                                      List<BiomeDictionary.Type> preferredBiomeTypes, int optimalElevationMin, int optimalElevationMax) {
         register(new CodePlant(id, name, soils, 4, RenderMethod.CROSSED,
                 stage -> new ResourceLocation("agricrops:blocks/crop_" + id + (stage + 1)),
                 new ResourceLocation("agricrops:items/seed_" + id),
-                Collections.singletonList(product), Collections.singletonList(unverifiedSeed)));
+                Collections.singletonList(product), Collections.singletonList(unverifiedSeed),
+                preferredBiomeTypes, optimalElevationMin, optimalElevationMax));
     }
 
     private static void vanillaTextured(String id, String name, List<String> soils, int stages,
                                         String blockStagePrefix, String seedItemName, ItemStack product,
                                         ItemStack unverifiedSeed) {
+        vanillaTextured(id, name, soils, stages, blockStagePrefix, seedItemName, product, unverifiedSeed,
+                Collections.emptyList(), 0, 255);
+    }
+
+    private static void vanillaTextured(String id, String name, List<String> soils, int stages,
+                                        String blockStagePrefix, String seedItemName, ItemStack product,
+                                        ItemStack unverifiedSeed, List<BiomeDictionary.Type> preferredBiomeTypes,
+                                        int optimalElevationMin, int optimalElevationMax) {
         register(new CodePlant(id, name, soils, stages, RenderMethod.CROSSED,
                 stage -> new ResourceLocation("minecraft:blocks/" + blockStagePrefix + stage),
                 new ResourceLocation("minecraft:items/" + seedItemName),
-                Collections.singletonList(product), Collections.singletonList(unverifiedSeed)));
+                Collections.singletonList(product), Collections.singletonList(unverifiedSeed),
+                preferredBiomeTypes, optimalElevationMin, optimalElevationMax));
     }
 
     private static void register(CodePlant plant) {

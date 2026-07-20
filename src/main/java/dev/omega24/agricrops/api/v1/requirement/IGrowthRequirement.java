@@ -1,6 +1,6 @@
 package dev.omega24.agricrops.api.v1.requirement;
 
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import java.util.Collection;
 import java.util.Optional;
@@ -24,12 +24,13 @@ import net.minecraft.world.World;
 public interface IGrowthRequirement {
 
     /**
-     * Retrieves a list of all the soils that are valid for this growth requirement.
+     * Retrieves the set of soil composition tags valid for this growth requirement. An
+     * empty collection means any registered {@code ISoilProfile} is acceptable (design §3).
      *
-     * @return A list containing all the soils valid for this growth requirement.
+     * @return the composition tags valid for this growth requirement.
      */
     @Nonnull
-    Collection<IAgriSoil> getSoils();
+    Collection<ISoilComposition> getSoilCompositions();
 
     /**
      * Retrieves a list of all the conditions that make up this growth requirement.

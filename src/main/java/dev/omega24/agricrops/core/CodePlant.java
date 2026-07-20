@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -35,7 +36,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * An {@link IAgriPlant} defined directly in code (an Agricrops fork-native plant), as
  * opposed to {@link JsonPlant} which wraps an AgriCore JSON definition.
  *
- * <p>Mirrors {@link CodeSoil}: a minimal placeholder set of plants so crop sticks have
+ * <p>Mirrors {@link dev.omega24.agricrops.impl.v1.SoilProfile}: a minimal placeholder set of plants so crop sticks have
  * something to grow, until the design's species/attribute registries land
  * (crop-mod-design §7). All growth/seed/spread chances here are reasonable defaults,
  * not balanced numbers.
@@ -52,11 +53,23 @@ public class CodePlant implements IAgriPlant {
     private final List<ItemStack> products;
     private final IGrowthRequirement growthRequirement;
     private final List<FuzzyStack> seedItems;
+    private final List<BiomeDictionary.Type> preferredBiomeTypes;
+    private final int optimalElevationMin;
+    private final int optimalElevationMax;
 
     public CodePlant(@Nonnull String id, @Nonnull String plantName, @Nonnull List<String> soilIds,
                     int growthStages, @Nonnull RenderMethod renderMethod,
                     @Nonnull IntFunction<ResourceLocation> stageTexture, @Nonnull ResourceLocation seedTexture,
                     @Nonnull List<ItemStack> products, @Nonnull List<ItemStack> unverifiedSeedItems) {
+        this(id, plantName, soilIds, growthStages, renderMethod, stageTexture, seedTexture, products,
+                unverifiedSeedItems, Collections.emptyList(), 0, 255);
+    }
+
+    public CodePlant(@Nonnull String id, @Nonnull String plantName, @Nonnull List<String> soilIds,
+                    int growthStages, @Nonnull RenderMethod renderMethod,
+                    @Nonnull IntFunction<ResourceLocation> stageTexture, @Nonnull ResourceLocation seedTexture,
+                    @Nonnull List<ItemStack> products, @Nonnull List<ItemStack> unverifiedSeedItems,
+                    @Nonnull List<BiomeDictionary.Type> preferredBiomeTypes, int optimalElevationMin, int optimalElevationMax) {
         this.id = Objects.requireNonNull(id);
         this.plantName = Objects.requireNonNull(plantName);
         this.growthStages = growthStages;
@@ -79,11 +92,15 @@ public class CodePlant implements IAgriPlant {
 
         final GrowthReqBuilder builder = new GrowthReqBuilder();
         soilIds.stream()
-                .map(sid -> AgriApi.getSoilRegistry().get(sid))
+                .map(sid -> AgriApi.getSoilCompositionRegistry().get(sid))
                 .filter(java.util.Optional::isPresent)
                 .map(java.util.Optional::get)
-                .forEach(builder::addSoil);
+                .forEach(builder::addSoilComposition);
         this.growthRequirement = builder.build();
+
+        this.preferredBiomeTypes = Collections.unmodifiableList(new java.util.ArrayList<>(Objects.requireNonNull(preferredBiomeTypes)));
+        this.optimalElevationMin = optimalElevationMin;
+        this.optimalElevationMax = optimalElevationMax;
     }
 
     @Override
@@ -155,6 +172,22 @@ public class CodePlant implements IAgriPlant {
     @Override
     public double getGrowthChanceBonus() {
         return 0.05;
+    }
+
+    @Nonnull
+    @Override
+    public Collection<BiomeDictionary.Type> getPreferredBiomeTypes() {
+        return this.preferredBiomeTypes;
+    }
+
+    @Override
+    public int getOptimalElevationMin() {
+        return this.optimalElevationMin;
+    }
+
+    @Override
+    public int getOptimalElevationMax() {
+        return this.optimalElevationMax;
     }
 
     @Override

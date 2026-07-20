@@ -1,17 +1,18 @@
 package dev.omega24.agricrops.farming.growthrequirement;
 
 import com.google.common.base.Preconditions;
+import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.requirement.BlockCondition;
 import dev.omega24.agricrops.api.v1.requirement.ICondition;
 import dev.omega24.agricrops.api.v1.requirement.IGrowthRequirement;
-import dev.omega24.agricrops.api.v1.soil.IAgriSoil;
+import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
+import dev.omega24.agricrops.api.v1.soil.ISoilProfile;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -33,17 +34,17 @@ public final class GrowthRequirement implements IGrowthRequirement {
     private final int maxLight;
 
     @Nonnull
-    private final List<IAgriSoil> soils;
+    private final List<ISoilComposition> soilCompositions;
     @Nonnull
     private final List<ICondition> conditions;
 
     GrowthRequirement(
-            @Nonnull List<IAgriSoil> soils,
+            @Nonnull List<ISoilComposition> soilCompositions,
             @Nonnull List<ICondition> conditions,
             int minLight,
             int maxLight
     ) {
-        this.soils = Preconditions.checkNotNull(soils);
+        this.soilCompositions = Preconditions.checkNotNull(soilCompositions);
         this.conditions = Preconditions.checkNotNull(conditions);
         this.conditions.sort((a, b) -> Integer.compare(a.getComplexity(), b.getComplexity()));
         if (minLight < maxLight) {
@@ -57,8 +58,8 @@ public final class GrowthRequirement implements IGrowthRequirement {
 
     @Override
     @Nonnull
-    public Collection<IAgriSoil> getSoils() {
-        return Collections.unmodifiableCollection(this.soils);
+    public Collection<ISoilComposition> getSoilCompositions() {
+        return Collections.unmodifiableCollection(this.soilCompositions);
     }
 
     @Override
@@ -83,16 +84,15 @@ public final class GrowthRequirement implements IGrowthRequirement {
         Preconditions.checkNotNull(world);
         Preconditions.checkNotNull(pos);
 
-        // Evaluate. Some soils (e.g. farmland) have no item form and so can never match via a
-        // FuzzyStack — those match by block identity instead (IAgriSoil#matchesBlock).
-        final Block block = world.getBlockState(pos.down()).getBlock();
-        if (this.getSoils().stream().anyMatch(soil -> soil.matchesBlock(block))) {
-            return true;
+        // Evaluate. Unregistered blocks have no ISoilProfile and stay unsupported (design
+        // §3): no silent fallback to a generic profile.
+        final Optional<ISoilProfile> profile = AgriApi.getSoilProfileRegistry().get(world.getBlockState(pos.down()));
+        if (!profile.isPresent()) {
+            return false;
         }
 
-        return FuzzyStack.from(world.getBlockState(pos.down()))
-                .filter(soil -> this.getSoils().stream().anyMatch(e -> e.isVarient(soil)))
-                .isPresent();
+        // An empty composition list means this plant doesn't care which registered soil it's on.
+        return this.soilCompositions.isEmpty() || this.soilCompositions.contains(profile.get().getComposition());
     }
 
     @Override
