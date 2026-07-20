@@ -4,6 +4,7 @@ package dev.omega24.agricrops.core;
 
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
+import dev.omega24.agricrops.api.v1.plant.CropLootTier;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.render.RenderMethod;
 import dev.omega24.agricrops.api.v1.requirement.IGrowthRequirement;
@@ -56,6 +57,9 @@ public class CodePlant implements IAgriPlant {
     private final List<BiomeDictionary.Type> preferredBiomeTypes;
     private final int optimalElevationMin;
     private final int optimalElevationMax;
+    private final List<CropLootTier> lootTiers;
+    private final boolean weed;
+    private final boolean aggressive;
 
     public CodePlant(@Nonnull String id, @Nonnull String plantName, @Nonnull List<String> soilIds,
                     int growthStages, @Nonnull RenderMethod renderMethod,
@@ -70,6 +74,30 @@ public class CodePlant implements IAgriPlant {
                     @Nonnull IntFunction<ResourceLocation> stageTexture, @Nonnull ResourceLocation seedTexture,
                     @Nonnull List<ItemStack> products, @Nonnull List<ItemStack> unverifiedSeedItems,
                     @Nonnull List<BiomeDictionary.Type> preferredBiomeTypes, int optimalElevationMin, int optimalElevationMax) {
+        this(id, plantName, soilIds, growthStages, renderMethod, stageTexture, seedTexture, products,
+                unverifiedSeedItems, preferredBiomeTypes, optimalElevationMin, optimalElevationMax,
+                Collections.emptyList(), false, false);
+    }
+
+    /**
+     * Full constructor - adds staged loot tiers (crop-mod-design.md §6) and the weed/aggressive
+     * flags (§8) on top of everything the shorter overloads already cover, primarily so
+     * ZenScript-registered plants (§11 step 8/§7's "mostly via CraftTweaker" note on
+     * {@code LockedAttribute}) aren't stuck with every plant behaving like the pre-rewrite
+     * single-tier-at-max-stage default, or unable to define their own weed variant.
+     *
+     * @param lootTiers empty means "use {@link IAgriPlant}'s single-tier-at-max-stage default,"
+     * matching every existing {@code DefaultPlants} registration untouched.
+     */
+    public CodePlant(@Nonnull String id, @Nonnull String plantName, @Nonnull List<String> soilIds,
+                    int growthStages, @Nonnull RenderMethod renderMethod,
+                    @Nonnull IntFunction<ResourceLocation> stageTexture, @Nonnull ResourceLocation seedTexture,
+                    @Nonnull List<ItemStack> products, @Nonnull List<ItemStack> unverifiedSeedItems,
+                    @Nonnull List<BiomeDictionary.Type> preferredBiomeTypes, int optimalElevationMin, int optimalElevationMax,
+                    @Nonnull List<CropLootTier> lootTiers, boolean weed, boolean aggressive) {
+        this.lootTiers = Collections.unmodifiableList(new java.util.ArrayList<>(Objects.requireNonNull(lootTiers)));
+        this.weed = weed;
+        this.aggressive = aggressive;
         this.id = Objects.requireNonNull(id);
         this.plantName = Objects.requireNonNull(plantName);
         this.growthStages = growthStages;
@@ -105,7 +133,18 @@ public class CodePlant implements IAgriPlant {
 
     @Override
     public boolean isWeed() {
-        return false;
+        return this.weed;
+    }
+
+    @Override
+    public boolean isAggressive() {
+        return this.aggressive;
+    }
+
+    @Nonnull
+    @Override
+    public List<CropLootTier> getLootTiers() {
+        return this.lootTiers.isEmpty() ? IAgriPlant.super.getLootTiers() : this.lootTiers;
     }
 
     @Override

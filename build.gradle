@@ -73,4 +73,5 @@ dependencies {
     compileOnly rfg.deobf('curse.maven:actually-additions-228404:3117927')                    // Actually Additions r152
     compileOnly(rfg.deobf('curse.maven:the-one-probe-245211:2667280')) { transitive = false } // The One Probe 1.4.28
     compileOnly(rfg.deobf('curse.maven:ender-io-64578:3328811')) { transitive = false }        // EnderIO 5.3.70
+    compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.715' // CraftTweaker (ZenScript authoring, design §7/§11) - pulls in CraftTweaker2-API + ZenScript transitively
 }
