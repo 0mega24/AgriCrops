@@ -55,6 +55,9 @@ public class MutateStrategy implements IAgriCrossStrategy {
                 .stream()
                 // Filter out mutations with both parents in the 'parents' list.
                 .filter(m -> m.areParentsIn(parents))
+                // Filter out mutations between a hard-incompatible species pair (design §7):
+                // no cross seed forms at all, regardless of stats or luck.
+                .filter(m -> !isIncompatiblePairing(m))
                 // Filter out mutations whose child wouldn't be viable here.
                 // Notice, this operation is by far the most costly.
                 // That' why we perform this operation last.
@@ -79,12 +82,25 @@ public class MutateStrategy implements IAgriCrossStrategy {
         }
 
         // Calculate the stat associated with the new plant.
-        Optional<IAgriStat> stat = AgriApi.getStatCalculatorRegistry().valueOf(mutation.getChild()).map(c -> c.calculateMutationStats(mutation, neighbors));
+        Optional<IAgriStat> stat = AgriApi.getStatCalculatorRegistry().valueOf(mutation.getChild()).map(c -> c.calculateMutationStats(mutation, neighbors, rand));
 
         // Return the mutation result.
         return stat
                 // Map the stat to an AgriSeed by adding the plant.
                 .map(s -> new AgriSeed(mutation.getChild(), s));
+    }
+
+    /**
+     * True if this mutation's required parents are a hard-incompatible species pair
+     * (crop-mod-design.md §7). Mutations with other than two required parents have no single
+     * pair to check and are never blocked here.
+     */
+    private static boolean isIncompatiblePairing(IAgriMutation mutation) {
+        List<IAgriPlant> required = mutation.getParents();
+        if (required.size() != 2) {
+            return false;
+        }
+        return AgriApi.getAttributeUnlockRegistry().isIncompatible(required.get(0).getId(), required.get(1).getId());
     }
 
 }

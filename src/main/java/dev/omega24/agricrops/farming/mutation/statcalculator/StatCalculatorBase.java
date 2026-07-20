@@ -1,6 +1,8 @@
 package dev.omega24.agricrops.farming.mutation.statcalculator;
 
+import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.adapter.IAgriAdapter;
+import dev.omega24.agricrops.api.v1.attribute.LockedAttributeInstance;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
@@ -12,8 +14,10 @@ import dev.omega24.agricrops.farming.PlantStats;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Predicate;
 
 public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAdapter<IAgriStatCalculator> {
@@ -26,10 +30,46 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
     }
 
     @Override
-    public IAgriStat calculateMutationStats(IAgriMutation mutation, Collection<IAgriCrop> parents) {
+    public IAgriStat calculateMutationStats(IAgriMutation mutation, Collection<IAgriCrop> parents, Random rand) {
         Objects.requireNonNull(mutation, "The mutation to calculate the stats for must not be null!");
         Objects.requireNonNull(parents, "The set of parents to calculate the mutation result stats from must not be null!");
-        return blend(parents, mutation::hasParent, AgriCraftConfig.cropStatDivisor);
+        Objects.requireNonNull(rand, "The random source to roll locked-attribute unlocks with must not be null!");
+        IAgriStat result = blend(parents, mutation::hasParent, AgriCraftConfig.cropStatDivisor);
+        return rollLockedAttributes(mutation, parents, result, rand);
+    }
+
+    /**
+     * Species pairing for locked-attribute unlocks (crop-mod-design.md §7) only applies to
+     * mutations with exactly two required parent species — the registry itself is
+     * pair-keyed, so a 3+ parent mutation has no single pair to roll against and is left
+     * with whatever attributes the stat blend already carries (none, since {@code blend}
+     * never touches them).
+     */
+    private IAgriStat rollLockedAttributes(IAgriMutation mutation, Collection<IAgriCrop> parents, IAgriStat result, Random rand) {
+        List<IAgriPlant> required = mutation.getParents();
+        if (required.size() != 2) {
+            return result;
+        }
+        IAgriPlant plantA = required.get(0);
+        IAgriPlant plantB = required.get(1);
+        IAgriStat statA = findGenomeOf(plantA, parents);
+        IAgriStat statB = findGenomeOf(plantB, parents);
+        List<LockedAttributeInstance> unlocked = AgriApi.getAttributeUnlockRegistry()
+                .rollCross(plantA.getId(), statA, plantB.getId(), statB, rand);
+        return result.withLockedAttributes(unlocked);
+    }
+
+    private static IAgriStat findGenomeOf(IAgriPlant plant, Collection<IAgriCrop> parents) {
+        for (IAgriCrop parent : parents) {
+            if (parent == null) {
+                continue;
+            }
+            final AgriSeed parentSeed = parent.getSeed();
+            if (parentSeed != null && Objects.equals(parentSeed.getPlant(), plant)) {
+                return parentSeed.getStat();
+            }
+        }
+        return null;
     }
 
     /**
