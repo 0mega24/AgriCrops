@@ -46,6 +46,7 @@ tile.agricrops:seed_storage_controller.0.name=Seed Storage Controller
 tile.agricrops:fence.0.name=Fence
 tile.agricrops:fence_gate.0.name=Fence Gate
 tile.agricrops:peripheral.name=Computer Controlled Seed Analyzer
+tile.agricrops:crop_scanner.name=Crop Scanner
 
 // ========================================
 // Entities
@@ -121,6 +122,13 @@ agricrops_description.method.isCrossCrop=Returns if the crop at the specified di
 agricrops_description.method.isFertile=Returns if the crop at the specified direction is fertile and can grow
 agricrops_description.method.isMature=Returns if the crop crop at the specified direction is mature
 agricrops_description.method.needsBaseBlock=Returns if the crop crop at the specified direction needs a base block
+agricrops_description.method.getSoilData=Returns the soil column data [depth, composition, nutrients, nutrientCapacity, moisture] below this crop
+agricrops_description.method.getBiomeElevationModifier=Returns this crop's current biome/elevation habitat satisfaction (0..1)
+agricrops_description.method.getGrowthProgress=Returns [stage, stageCount, lootTierMinStage] for this crop
+agricrops_description.method.getPreferredBiomes=Returns the biome dictionary tags this species prefers
+agricrops_description.method.getPreferredSoil=Returns the soil composition tags this species prefers
+agricrops_description.method.getIdealSoilStack=Returns a representative block id satisfying this species' top soil preference
+agricrops_description.method.getIdealConditions=Returns [biomes, minElevation, maxElevation, soils, minLight, maxLight] for this species
 
 // ========================================
 // Misc

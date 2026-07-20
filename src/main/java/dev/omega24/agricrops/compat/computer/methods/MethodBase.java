@@ -45,6 +45,11 @@ public abstract class MethodBase implements IAgriPeripheralMethod {
     }
 
     @Override
+    public final boolean appliesToCrop() {
+        return appliesToCrop;
+    }
+
+    @Override
     public final String getDescription() {
         return AgriCore.getTranslator().translate("agricrops_description.method." + this.getId());
     }
@@ -70,13 +75,23 @@ public abstract class MethodBase implements IAgriPeripheralMethod {
             }
         } else if (appliesToCrop) {
 
-            EnumFacing dir = EnumFacing.valueOf(args[0].toString());
+            // With a direction argument, this is the analyzer's directional proxy onto a
+            // neighboring crop stick. With no arguments, this is a crop_stick component
+            // invoking one of its own methods on itself (crop-mod-design.md §9/§11 step 8).
+            final BlockPos targetPos;
+            if (args != null && args.length != 0) {
+                EnumFacing dir = EnumFacing.valueOf(args[0].toString());
 
-            if (dir == null) {
-                throw new InvocationException(this, "Invalid Direction!");
+                if (dir == null) {
+                    throw new InvocationException(this, "Invalid Direction!");
+                }
+
+                targetPos = pos.add(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ());
+            } else {
+                targetPos = pos;
             }
 
-            TileEntity tile = world.getTileEntity(pos.add(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ()));
+            TileEntity tile = world.getTileEntity(targetPos);
 
             if (tile == null) {
                 throw new InvocationException(this, "Missing Crop!");

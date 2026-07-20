@@ -552,6 +552,28 @@ public class BlockCrop extends BlockTileCustomRenderedBase<TileEntityCrop> imple
         return EnumPlantType.Crop;
     }
 
+    /**
+     * Redstone comparator output (crop-mod-design.md §10): growth progress as a 0-15 signal,
+     * same convention as vanilla farmland moisture - lets basic redstone automation react to
+     * "ready to harvest" without needing a full OC setup.
+     */
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        return this.getCrop(worldIn, pos)
+                .filter(TileEntityCrop::hasSeed)
+                .map(crop -> {
+                    final int stages = crop.getSeed().getPlant().getGrowthStages();
+                    return (15 * (crop.getGrowthStage() + 1)) / stages;
+                })
+                .orElse(0);
+    }
+
     @Override
     public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
         // TODO: Fix propertycropplant

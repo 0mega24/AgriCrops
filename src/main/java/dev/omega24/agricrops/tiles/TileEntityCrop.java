@@ -8,6 +8,7 @@ import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;
 import dev.omega24.agricrops.api.v1.misc.IAgriDisplayable;
+import dev.omega24.agricrops.api.v1.misc.IAgriPeripheralMethod;
 import dev.omega24.agricrops.api.v1.plant.CropLootTier;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
@@ -29,13 +30,24 @@ import com.infinityraider.infinitylib.block.tile.TileEntityBase;
 import com.infinityraider.infinitylib.utility.MessageUtil;
 import com.infinityraider.infinitylib.utility.WorldHelper;
 import com.infinityraider.infinitylib.utility.debug.IDebuggable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import li.cil.oc.api.Network;
+import li.cil.oc.api.machine.Arguments;
+import li.cil.oc.api.machine.Context;
+import li.cil.oc.api.network.Environment;
+import li.cil.oc.api.network.ManagedPeripheral;
+import li.cil.oc.api.network.Message;
+import li.cil.oc.api.network.Node;
+import li.cil.oc.api.network.SimpleComponent;
+import li.cil.oc.api.network.Visibility;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -47,10 +59,15 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebuggable, IAgriDisplayable {
+@net.minecraftforge.fml.common.Optional.Interface(modid = "opencomputers", iface = "li.cil.oc.api.network.Environment")
+@net.minecraftforge.fml.common.Optional.Interface(modid = "opencomputers", iface = "li.cil.oc.api.network.SimpleComponent")
+@net.minecraftforge.fml.common.Optional.Interface(modid = "opencomputers", iface = "li.cil.oc.api.network.ManagedPeripheral")
+public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebuggable, IAgriDisplayable,
+        Environment, SimpleComponent, ManagedPeripheral {
 
     /**
      * Nutrients drained from the soil column per successful growth tick. Placeholder
@@ -85,6 +102,22 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
      * crop fully converts into a weed.
      */
     private long destabilizeExpiry = 0L;
+
+    /**
+     * Whether an attached fertilizer/irrigation device should act on this crop
+     * (crop-mod-design.md §9's {@code setAutoFertilize}/{@code setAutoWater}) - gates an
+     * external device, never the crop stick's own moisture/nutrient ticking directly.
+     */
+    private boolean autoFertilize = false;
+    private boolean autoWater = false;
+
+    /**
+     * This crop stick's OC network node, stored as {@code Object} (rather than {@link Node})
+     * so the field's declared type doesn't require {@code li.cil.oc} classes to be loadable
+     * when OpenComputers isn't installed - only code inside {@code @Optional.Method}-annotated
+     * methods touches the real type.
+     */
+    private Object ocNode;
 
     // =========================================================================
     // Event Methods
@@ -208,6 +241,11 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             this.getDrops(consumer, true, true, true);
         }
 
+        // Notify listeners this crop's plant is gone, before the tile is actually removed.
+        if (this.hasSeed()) {
+            this.pushSignal("crop_died");
+        }
+
         // Remove the block.
         this.getWorld().removeTileEntity(pos);
         this.getWorld().setBlockToAir(pos);
@@ -261,6 +299,15 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             }
         }
         return Optional.ofNullable(best);
+    }
+
+    /**
+     * Public view of {@link #findLootTier()}'s minimum stage, for OC telemetry
+     * (crop-mod-design.md §9's {@code getGrowthProgress()} - "which loot tier that stage
+     * currently qualifies for").
+     */
+    public Optional<Integer> getCurrentLootTierMinStage() {
+        return this.findLootTier().map(CropLootTier::getMinStage);
     }
 
     @Override
@@ -410,6 +457,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         if (stage != this.growthStage) {
             this.growthStage = stage;
             this.markForUpdate();
+            this.pushSignal("crop_growth", stage);
             return true;
         } else {
             return false;
@@ -476,6 +524,15 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     private double habitatSatisfaction() {
         final IAgriPlant plant = this.seed.getPlant();
         return (this.biomeSatisfaction(plant) + this.elevationSatisfaction(plant)) / 2.0;
+    }
+
+    /**
+     * Public read-only view of {@link #habitatSatisfaction()} for OC telemetry
+     * (crop-mod-design.md §9's {@code getBiomeElevationModifier()}) - 1.0 (fully satisfied)
+     * for an empty crop stick, matching the no-preference default.
+     */
+    public double getBiomeElevationModifier() {
+        return this.hasSeed() ? this.habitatSatisfaction() : 1.0;
     }
 
     /**
@@ -565,12 +622,11 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     }
 
     /**
-     * Fires whenever a crop begins destabilizing. No-op today - a call-site stub so
-     * crop-mod-design.md §9's OC {@code crop_destabilizing} event can be wired in later
-     * (§11 step 8) without touching the weed-risk logic again.
+     * Fires whenever a crop begins destabilizing - pushes the OC {@code crop_destabilizing}
+     * signal event (crop-mod-design.md §9, wired in §11 step 8).
      */
     private void onDestabilizingBegin() {
-        // Intentionally empty - see crop-mod-design.md §9 / §11 step 8.
+        this.pushSignal("crop_destabilizing");
     }
 
     /**
@@ -606,6 +662,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     private void convertToWeed() {
         this.destabilizing = false;
         final IAgriStat carryOver = this.seed.getStat();
+        this.pushSignal("crop_died");
         AgriApi.getPlantRegistry().get(WeedPlant.ID)
                 .ifPresent(weed -> this.setSeed(new AgriSeed(weed, carryOver)));
     }
@@ -686,6 +743,37 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
     }
 
     // =========================================================================
+    // Auto-fertilize / auto-water gating (crop-mod-design.md §9)
+    // =========================================================================
+    /**
+     * Whether an attached fertilizer device should act on this crop. This crop stick's own
+     * moisture/nutrient ticking ({@link #tickMoisture()}, growth-tick nutrient drain) is
+     * unaffected either way - this only gates an external device via OC's
+     * {@code setAutoFertilize}.
+     */
+    public boolean isAutoFertilize() {
+        return this.autoFertilize;
+    }
+
+    public void setAutoFertilize(boolean value) {
+        this.autoFertilize = value;
+        this.markForUpdate();
+    }
+
+    /**
+     * Whether an attached irrigation device should act on this crop, via OC's
+     * {@code setAutoWater}. See {@link #isAutoFertilize()}.
+     */
+    public boolean isAutoWater() {
+        return this.autoWater;
+    }
+
+    public void setAutoWater(boolean value) {
+        this.autoWater = value;
+        this.markForUpdate();
+    }
+
+    // =========================================================================
     // IAgriFertilizable Methods
     // =========================================================================
     @Override
@@ -756,6 +844,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         } else if (this.canBeHarvested()) {
             boolean resetsGrowth = this.findLootTier().map(CropLootTier::resetsGrowth).orElse(true);
             this.getDrops(consumer, false, false, true);
+            this.pushSignal("crop_harvest");
             if (resetsGrowth) {
                 this.setGrowthStage(0);
             }
@@ -792,6 +881,8 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         tag.setInteger(AgriNBT.META, growthStage);
         tag.setBoolean(AgriNBT.DESTABILIZING, destabilizing);
         tag.setLong(AgriNBT.DESTABILIZE_EXPIRY, destabilizeExpiry);
+        tag.setBoolean(AgriNBT.AUTO_FERTILIZE, autoFertilize);
+        tag.setBoolean(AgriNBT.AUTO_WATER, autoWater);
         if (this.hasSeed()) {
             this.getSeed().getStat().writeToNBT(tag);
             tag.setString(AgriNBT.SEED, this.getSeed().getPlant().getId());
@@ -812,6 +903,8 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         this.crossCrop = tag.getBoolean(AgriNBT.CROSS_CROP);
         this.destabilizing = tag.getBoolean(AgriNBT.DESTABILIZING);
         this.destabilizeExpiry = tag.getLong(AgriNBT.DESTABILIZE_EXPIRY);
+        this.autoFertilize = tag.getBoolean(AgriNBT.AUTO_FERTILIZE);
+        this.autoWater = tag.getBoolean(AgriNBT.AUTO_WATER);
     }
 
     /**
@@ -928,4 +1021,159 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         }
 
     }
+
+    // =========================================================================
+    // OpenComputers - the crop_stick component (crop-mod-design.md §9, §11 step 8)
+    // <editor-fold>
+    // =========================================================================
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!this.isRemote() && Loader.isModLoaded("opencomputers")) {
+            this.ocConnect();
+        }
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        if (Loader.isModLoaded("opencomputers")) {
+            this.ocDisconnect();
+        }
+    }
+
+    @Override
+    public void onChunkUnload() {
+        super.onChunkUnload();
+        if (Loader.isModLoaded("opencomputers")) {
+            this.ocDisconnect();
+        }
+    }
+
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    private void ocConnect() {
+        if (this.ocNode == null) {
+            this.ocNode = Network.newNode(this, Visibility.Network).withComponent("crop_stick").create();
+        }
+        Network.joinOrCreateNetwork(this);
+    }
+
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    private void ocDisconnect() {
+        if (this.ocNode != null) {
+            ((Node) this.ocNode).remove();
+            this.ocNode = null;
+        }
+    }
+
+    /**
+     * Pushes an OC signal event to any computer reachable from this crop stick's node, if
+     * OpenComputers is installed and this crop stick is actually connected to a network yet
+     * (e.g. not before the first {@link #onLoad()}). No-op otherwise - signal events are
+     * a telemetry nicety, never load-bearing for the crop's own logic.
+     */
+    private void pushSignal(@Nonnull String name, Object... args) {
+        if (!this.isRemote() && Loader.isModLoaded("opencomputers")) {
+            this.pushSignalOC(name, args);
+        }
+    }
+
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    private void pushSignalOC(String name, Object[] args) {
+        final Node n = (Node) this.ocNode;
+        if (n != null) {
+            final Object[] payload = new Object[args.length + 1];
+            payload[0] = name;
+            System.arraycopy(args, 0, payload, 1, args.length);
+            n.sendToReachable("computer.signal", payload);
+        }
+    }
+
+    @Override
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public Node node() {
+        return (Node) this.ocNode;
+    }
+
+    @Override
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public void onConnect(Node node) {
+        // Nothing to do - no other-node-driven state to react to yet.
+    }
+
+    @Override
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public void onDisconnect(Node node) {
+        // Nothing to do - see onConnect.
+    }
+
+    @Override
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public void onMessage(Message message) {
+        // No inbound network messages are handled directly - all interaction goes through
+        // invoke() (pull) or pushSignal (push).
+    }
+
+    @Override
+    @Nonnull
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public String getComponentName() {
+        return "crop_stick";
+    }
+
+    @Override
+    @Nonnull
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public String[] methods() {
+        final List<String> ids = new ArrayList<>();
+        ids.add("setAutoFertilize");
+        ids.add("setAutoWater");
+        ids.add("isAutoFertilize");
+        ids.add("isAutoWater");
+        for (IAgriPeripheralMethod method : AgriApi.getPeripheralMethodRegistry().all()) {
+            if (method.appliesToCrop()) {
+                ids.add(method.getId());
+            }
+        }
+        return ids.toArray(new String[0]);
+    }
+
+    @Override
+    @Nullable
+    @net.minecraftforge.fml.common.Optional.Method(modid = "opencomputers")
+    public Object[] invoke(@Nullable String methodName, Context context, @Nullable Arguments args) throws Exception {
+        // The auto-fertilize/auto-water gates are crop_stick-exclusive (they don't make
+        // sense proxied through the analyzer's directional lookup), so they're handled
+        // directly here instead of going through the shared IAgriPeripheralMethod registry.
+        if ("setAutoFertilize".equals(methodName) || "setAutoWater".equals(methodName)) {
+            final boolean value = args != null && args.checkBoolean(0);
+            if ("setAutoFertilize".equals(methodName)) {
+                this.setAutoFertilize(value);
+            } else {
+                this.setAutoWater(value);
+            }
+            return new Object[]{value};
+        } else if ("isAutoFertilize".equals(methodName)) {
+            return new Object[]{this.isAutoFertilize()};
+        } else if ("isAutoWater".equals(methodName)) {
+            return new Object[]{this.isAutoWater()};
+        }
+
+        final IAgriPeripheralMethod method = AgriApi.getPeripheralMethodRegistry().get(methodName).orElse(null);
+
+        if (method == null || !method.appliesToCrop()) {
+            return null;
+        }
+
+        final Object[] argObjects = (args == null) ? null : args.toArray();
+
+        try {
+            return method.call(this.getWorld(), this.getPos(), null, argObjects);
+        } catch (IAgriPeripheralMethod.InvocationException e) {
+            throw new Exception(e.getDescription());
+        }
+    }
+    // --------------------------------------------------
+    // </editor-fold>
+    // =========================================================================
 }

@@ -17,6 +17,13 @@ public interface IAgriPeripheralMethod extends IAgriRegisterable {
     @Nullable
     Object[] call(@Nullable IBlockAccess world, @Nullable BlockPos pos, @Nullable ItemStack journal, @Nullable Object... args) throws InvocationException;
 
+    /**
+     * Whether this method can be invoked directly on a crop stick's own {@code crop_stick}
+     * OC component (crop-mod-design.md §9/§11 step 8), as opposed to only via the analyzer's
+     * directional proxy. Used to filter {@code TileEntityCrop.methods()}'s listing.
+     */
+    boolean appliesToCrop();
+
     public static class InvocationException extends Exception {
 
         private final IAgriPeripheralMethod method;

@@ -1,6 +1,7 @@
 package dev.omega24.agricrops.init;
 
 import dev.omega24.agricrops.blocks.BlockCrop;
+import dev.omega24.agricrops.blocks.BlockCropScanner;
 import dev.omega24.agricrops.blocks.BlockSeedAnalyzer;
 import dev.omega24.agricrops.blocks.BlockPeripheral;
 import com.infinityraider.infinitylib.block.BlockBase;
@@ -18,6 +19,7 @@ public class AgriBlocks {
         CROP = new BlockCrop();
         SEED_ANALYZER = new BlockSeedAnalyzer();
         PERIPHERAL = new BlockPeripheral();
+        CROP_SCANNER = new BlockCropScanner();
     }
 
     // Crops
@@ -31,5 +33,9 @@ public class AgriBlocks {
     // Peripherals
     @Nonnull
     public final BlockBase PERIPHERAL;
+
+    // Crop Scanner hub (crop-mod-design.md §10)
+    @Nonnull
+    public final BlockBase CROP_SCANNER;
 
 }

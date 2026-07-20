@@ -6,12 +6,19 @@ import dev.omega24.agricrops.api.v1.plugin.AgriPlugin;
 import dev.omega24.agricrops.api.v1.plugin.IAgriPlugin;
 import dev.omega24.agricrops.compat.computer.methods.MethodAnalyze;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetBaseBlock;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetBiomeElevationModifier;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetBrightness;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetBrightnessRange;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetCurrentSoil;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetGrowthProgress;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetGrowthStage;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetIdealConditions;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetIdealSoilStack;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetNeededSoil;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetPlant;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetPreferredBiomes;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetPreferredSoil;
+import dev.omega24.agricrops.compat.computer.methods.MethodGetSoilData;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetSpecimen;
 import dev.omega24.agricrops.compat.computer.methods.MethodGetStats;
 import dev.omega24.agricrops.compat.computer.methods.MethodHasJournal;
@@ -50,7 +57,14 @@ public class ComputerPlugin implements IAgriPlugin {
         new MethodIsCrossCrop(),
         new MethodIsFertile(),
         new MethodIsMature(),
-        new MethodNeedsBaseBlock()
+        new MethodNeedsBaseBlock(),
+        new MethodGetSoilData(),
+        new MethodGetBiomeElevationModifier(),
+        new MethodGetGrowthProgress(),
+        new MethodGetPreferredBiomes(),
+        new MethodGetPreferredSoil(),
+        new MethodGetIdealSoilStack(),
+        new MethodGetIdealConditions()
     };
 
     @Override

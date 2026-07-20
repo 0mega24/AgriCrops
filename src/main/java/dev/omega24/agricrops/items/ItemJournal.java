@@ -6,6 +6,7 @@ import dev.omega24.agricrops.AgriCraft;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.items.IAgriJournalItem;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
+import dev.omega24.agricrops.farming.AgriDiscoveryLedger;
 import dev.omega24.agricrops.handler.GuiHandler;
 import dev.omega24.agricrops.items.tabs.AgriTabs;
 import dev.omega24.agricrops.reference.AgriNBT;
@@ -94,6 +95,13 @@ public class ItemJournal extends ItemBase implements IAgriJournalItem, IItemWith
                 String old = tag.getString(AgriNBT.DISCOVERED_SEEDS);
                 tag.setString(AgriNBT.DISCOVERED_SEEDS, old + plant.getId() + ";");
                 journal.setTagCompound(tag);
+            }
+            // Also feed the global, queryable discovery ledger (crop-mod-design.md §10) -
+            // independent of this specific journal item, so OC scripts can query "known to
+            // anyone" rather than only "known to this player's journal."
+            final AgriDiscoveryLedger ledger = AgriDiscoveryLedger.get();
+            if (ledger != null) {
+                ledger.recordSpecies(plant.getId());
             }
         }
     }
