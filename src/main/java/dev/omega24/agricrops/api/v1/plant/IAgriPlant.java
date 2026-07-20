@@ -271,6 +271,28 @@ public interface IAgriPlant extends IAgriRegisterable {
      */
     void getHarvestProducts(@Nonnull Consumer<ItemStack> products, @Nonnull IAgriCrop crop, @Nonnull IAgriStat stat, @Nonnull Random rand);
 
+    /**
+     * Staged loot list (crop-mod-design.md §6): the tier a harvest rolls is whichever entry
+     * has the highest {@link CropLootTier#getMinStage()} not exceeding the crop's current
+     * growth stage. Default is a single tier at the last growth stage that defers to
+     * {@link #getHarvestProducts} and resets growth on harvest — i.e. today's all-or-nothing,
+     * mature-only behavior, unchanged for any plant that doesn't define its own tiers.
+     *
+     * @return tiers in any order; callers pick the best match by minStage.
+     */
+    @Nonnull
+    default List<CropLootTier> getLootTiers() {
+        return Collections.singletonList(new CropLootTier(getGrowthStages() - 1, this::getHarvestProducts, true));
+    }
+
+    /**
+     * The lowest growth stage a harvest can roll any loot tier at all — the plant is not
+     * harvestable below this stage. Derived from {@link #getLootTiers()} by default.
+     */
+    default int getMinHarvestStage() {
+        return getLootTiers().stream().mapToInt(CropLootTier::getMinStage).min().orElse(getGrowthStages() - 1);
+    }
+
     // =========================================================================
     // IAgriPlant Rendering Interface
     // <editor-fold>

@@ -8,6 +8,7 @@ import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;
 import dev.omega24.agricrops.api.v1.misc.IAgriDisplayable;
+import dev.omega24.agricrops.api.v1.plant.CropLootTier;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
@@ -218,12 +219,36 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             if (includeSeeds && this.seed.getPlant().getSeedDropChanceBase() + this.growthStage * this.seed.getPlant().getSeedDropChanceBonus() > this.getRandom().nextDouble()) {
                 consumer.accept(this.getSeed().toStack());
             }
-            if (includeProducts && this.isMature()) {
-                for (int trials = CropStatCalculator.harvestTrials(this.seed.getStat()); trials > 0; trials--) {
-                    this.seed.getPlant().getHarvestProducts(consumer, this, this.seed.getStat(), this.getRandom());
-                }
+            if (includeProducts) {
+                this.findLootTier().ifPresent(tier -> {
+                    for (int trials = CropStatCalculator.harvestTrials(this.seed.getStat()); trials > 0; trials--) {
+                        tier.roll(consumer, this, this.seed.getStat(), this.getRandom());
+                    }
+                });
             }
         }
+    }
+
+    /**
+     * The highest-{@code minStage} loot tier (crop-mod-design.md §6) the current growth
+     * stage qualifies for, or empty if the plant hasn't reached even the lowest tier yet.
+     */
+    private Optional<CropLootTier> findLootTier() {
+        if (!this.hasSeed()) {
+            return Optional.empty();
+        }
+        CropLootTier best = null;
+        for (CropLootTier tier : this.seed.getPlant().getLootTiers()) {
+            if (tier.getMinStage() <= this.growthStage && (best == null || tier.getMinStage() > best.getMinStage())) {
+                best = tier;
+            }
+        }
+        return Optional.ofNullable(best);
+    }
+
+    @Override
+    public boolean canBeHarvested() {
+        return this.findLootTier().isPresent();
     }
 
     // =========================================================================
@@ -619,8 +644,11 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             }
             return MethodResult.SUCCESS;
         } else if (this.canBeHarvested()) {
+            boolean resetsGrowth = this.findLootTier().map(CropLootTier::resetsGrowth).orElse(true);
             this.getDrops(consumer, false, false, true);
-            this.setGrowthStage(0);
+            if (resetsGrowth) {
+                this.setGrowthStage(0);
+            }
             return MethodResult.SUCCESS;
         } else {
             return MethodResult.PASS;
