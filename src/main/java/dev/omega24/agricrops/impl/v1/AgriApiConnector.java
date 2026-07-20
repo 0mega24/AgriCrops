@@ -5,6 +5,8 @@ package dev.omega24.agricrops.impl.v1;
 import dev.omega24.agricrops.api.v1.AgriApiState;
 import dev.omega24.agricrops.api.v1.IAgriApiConnector;
 import dev.omega24.agricrops.api.v1.adapter.IAgriAdapterizer;
+import dev.omega24.agricrops.api.v1.attribute.IAttributeUnlockRegistry;
+import dev.omega24.agricrops.api.v1.attribute.LockedAttribute;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;
 import dev.omega24.agricrops.api.v1.misc.IAgriPeripheralMethod;
 import dev.omega24.agricrops.api.v1.misc.IAgriRegistry;
@@ -14,6 +16,7 @@ import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
 import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
+import dev.omega24.agricrops.api.v1.species.CropSpecies;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import javax.annotation.Nonnull;
@@ -44,6 +47,12 @@ public class AgriApiConnector implements IAgriApiConnector {
     private final IAgriAdapterizer<IAgriFertilizer> fertilizerRegistry;
     @Nonnull
     private final IAgriRegistry<IAgriPeripheralMethod> peripheralMethodRegistry;
+    @Nonnull
+    private final IAgriRegistry<CropSpecies> speciesRegistry;
+    @Nonnull
+    private final IAgriRegistry<LockedAttribute> attributeRegistry;
+    @Nonnull
+    private final IAttributeUnlockRegistry attributeUnlockRegistry;
 
     public AgriApiConnector() {
         this.plantRegistry = new AgriRegistry<>();
@@ -56,6 +65,9 @@ public class AgriApiConnector implements IAgriApiConnector {
         this.seedRegistry = new AgriAdapterizer<>();
         this.fertilizerRegistry = new AgriAdapterizer<>();
         this.peripheralMethodRegistry = new AgriRegistry<>();
+        this.speciesRegistry = new AgriRegistry<>();
+        this.attributeRegistry = new AgriRegistry<>();
+        this.attributeUnlockRegistry = new AttributeUnlockRegistry();
     }
 
     @Override
@@ -122,6 +134,24 @@ public class AgriApiConnector implements IAgriApiConnector {
     @Nonnull
     public IAgriRegistry<IAgriPeripheralMethod> connectPeripheralMethodRegistry() {
         return this.peripheralMethodRegistry;
+    }
+
+    @Override
+    @Nonnull
+    public IAgriRegistry<CropSpecies> connectSpeciesRegistry() {
+        return this.speciesRegistry;
+    }
+
+    @Override
+    @Nonnull
+    public IAgriRegistry<LockedAttribute> connectAttributeRegistry() {
+        return this.attributeRegistry;
+    }
+
+    @Override
+    @Nonnull
+    public IAttributeUnlockRegistry connectAttributeUnlockRegistry() {
+        return this.attributeUnlockRegistry;
     }
 
 }

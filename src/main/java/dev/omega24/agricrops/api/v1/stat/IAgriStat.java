@@ -1,5 +1,8 @@
 package dev.omega24.agricrops.api.v1.stat;
 
+import dev.omega24.agricrops.api.v1.attribute.LockedAttributeInstance;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,6 +63,29 @@ public interface IAgriStat {
      */
     @Nonnull
     IAgriStat with(@Nonnull CropStat stat, int value);
+
+    /**
+     * All locked attributes (crop-mod-design.md §7) currently active on this genome. Attributes
+     * this plant never unlocked are simply absent, not present-but-zero.
+     */
+    @Nonnull
+    Collection<LockedAttributeInstance> getLockedAttributes();
+
+    /**
+     * The active instance of the given locked attribute on this genome, or empty if this plant
+     * never unlocked it.
+     */
+    @Nonnull
+    Optional<LockedAttributeInstance> getLockedAttribute(@Nonnull String attributeId);
+
+    /**
+     * Replaces this genome's full set of active locked attributes (e.g. with the result of
+     * {@link dev.omega24.agricrops.api.v1.attribute.IAttributeUnlockRegistry#rollCross}).
+     *
+     * @return the new stat.
+     */
+    @Nonnull
+    IAgriStat withLockedAttributes(@Nonnull Collection<LockedAttributeInstance> attributes);
 
     /**
      * Writes the stat to an NBTTagcompound. Make sure to set the stat id value when implementing

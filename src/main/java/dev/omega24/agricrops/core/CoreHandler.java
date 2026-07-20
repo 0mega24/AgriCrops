@@ -83,6 +83,10 @@ public final class CoreHandler {
         DefaultSoilCompositions.register();
         DefaultSoilProfiles.register();
         DefaultPlants.register();
+
+        // Species and attribute-unlock registries (crop-mod-design §7): populated after the
+        // plants they mirror, since species ids follow plant ids by convention.
+        DefaultSpecies.register();
     }
 
     public static void init() {

@@ -3,6 +3,8 @@
 package dev.omega24.agricrops.api.v1;
 
 import dev.omega24.agricrops.api.v1.adapter.IAgriAdapterizer;
+import dev.omega24.agricrops.api.v1.attribute.IAttributeUnlockRegistry;
+import dev.omega24.agricrops.api.v1.attribute.LockedAttribute;
 import dev.omega24.agricrops.api.v1.fertilizer.IAgriFertilizer;
 import dev.omega24.agricrops.api.v1.misc.IAgriPeripheralMethod;
 import dev.omega24.agricrops.api.v1.misc.IAgriRegistry;
@@ -12,6 +14,7 @@ import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.soil.ISoilComposition;
 import dev.omega24.agricrops.api.v1.soil.ISoilProfileRegistry;
+import dev.omega24.agricrops.api.v1.species.CropSpecies;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import javax.annotation.Nonnull;
@@ -83,6 +86,24 @@ final class AgriApiConnectorFake implements IAgriApiConnector {
 
     @Override
     public IAgriRegistry<IAgriPeripheralMethod> connectPeripheralMethodRegistry() {
+        throw new UnsupportedOperationException("The stand-in version of the AgriCraft API does not support this operation.");
+    }
+
+    @Override
+    @Nonnull
+    public IAgriRegistry<CropSpecies> connectSpeciesRegistry() {
+        throw new UnsupportedOperationException("The stand-in version of the AgriCraft API does not support this operation.");
+    }
+
+    @Override
+    @Nonnull
+    public IAgriRegistry<LockedAttribute> connectAttributeRegistry() {
+        throw new UnsupportedOperationException("The stand-in version of the AgriCraft API does not support this operation.");
+    }
+
+    @Override
+    @Nonnull
+    public IAttributeUnlockRegistry connectAttributeUnlockRegistry() {
         throw new UnsupportedOperationException("The stand-in version of the AgriCraft API does not support this operation.");
     }
 
