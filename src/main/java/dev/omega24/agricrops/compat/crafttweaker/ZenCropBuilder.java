@@ -14,6 +14,7 @@ import stanhebben.zenscript.annotations.ZenMethod;
 public final class ZenCropBuilder {
     private final String id, seed, product, nameKey;
     private String soil = "minecraft:farmland";
+    private int regrowthStage = 1;
     private int germination = 1200, vegetative = 1200, flowering = 1200, fruiting = 1200;
     private int water = 1, nutrients = 1, minLight = 9, maxLight = 15;
     private int[] stats = new int[8];
@@ -23,6 +24,7 @@ public final class ZenCropBuilder {
     }
 
     @ZenMethod public ZenCropBuilder soil(String id) { this.soil = id; return this; }
+    @ZenMethod public ZenCropBuilder regrowFrom(int stage) { regrowthStage = stage; return this; }
     @ZenMethod public ZenCropBuilder phaseTicks(int germination, int vegetative, int flowering, int fruiting) {
         this.germination = germination; this.vegetative = vegetative;
         this.flowering = flowering; this.fruiting = fruiting; return this;
@@ -45,7 +47,7 @@ public final class ZenCropBuilder {
             for (StandardStat stat : StandardStat.values()) genome = genome.with(stat, stats[stat.ordinal()]);
             CropDefinitions.submit(new CropDefinition(id, seed, product, soil, nameKey,
                     CropDefinitions.timeline(germination, vegetative, flowering, fruiting), genome,
-                    water, nutrients, minLight, maxLight), replace);
+                    water, nutrients, minLight, maxLight, regrowthStage), replace);
             CraftTweakerAPI.logInfo("Agricrops: queued " + id + " from " + source + " (restart required)");
         } catch (RuntimeException exception) {
             String error = source + " / " + id + ": " + exception.getMessage();

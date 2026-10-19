@@ -19,6 +19,17 @@ public class PersistenceTest {
         assertEquals(state.crop(), decoded.crop()); assertEquals(state.genome(), decoded.genome());
         assertEquals(state.origin(), decoded.origin()); assertEquals(42, decoded.progress());
     }
+    @Test public void intermediatePostHarvestProgressRoundTripsWithoutResettingGenes() {
+        dev.omega24.agricrops.core.content.CropDefinition definition = new dev.omega24.agricrops.core.content.CropDefinition(
+                "agricrops:wheat", "minecraft:wheat_seeds", "minecraft:wheat", "minecraft:farmland", "agricrops.crop.wheat",
+                dev.omega24.agricrops.content.CropDefinitions.timeline(20, 40, 60, 80),
+                StandardGenome.neutral(), 1, 1, 9, 15, 5);
+        CropState harvested = dev.omega24.agricrops.core.field.CropActions.harvest(definition, specimen().at(200)).crop;
+        CropState decoded = CropNbt.read(CropNbt.write(harvested));
+        assertEquals(143, decoded.progress()); assertEquals(5, definition.stageAt(decoded.progress()));
+        assertEquals(specimen().genome(), decoded.genome());
+        assertEquals(SeedOrigin.BRED, decoded.origin());
+    }
     @Test(expected = IllegalArgumentException.class)
     public void unknownSchemaCannotSilentlyBecomeAFreshSeed() {
         NBTTagCompound data = CropNbt.write(specimen()); data.setInteger("schema", 2); CropNbt.read(data);

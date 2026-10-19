@@ -101,8 +101,7 @@ public final class CropTile extends TileEntity implements ITickable {
         int age = 0;
         if (crop != null) {
             CropDefinition definition = CropDefinitions.get(crop.crop());
-            if (definition != null) age = crop.progress() >= definition.timeline().totalTicks() ? 7
-                    : (int) (crop.progress() * 7 / definition.timeline().totalTicks());
+            if (definition != null) age = definition.stageAt(crop.progress());
         }
         IBlockState next = state.withProperty(CropSticksBlock.PLANTED, crop != null).withProperty(CropSticksBlock.AGE, age);
         if (!next.equals(state)) world.setBlockState(pos, next, 2);

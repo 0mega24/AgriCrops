@@ -67,6 +67,8 @@ Use only a disposable world. `agricrops definitions` shows the resolved timing. 
 then `agricrops verify <x> <y> <z>` requires three empty loaded positions (target, below, below-east),
 places a small watered field and exercises planting, accelerated paid development, harvest,
 NBT/drop/replant paths, care items and regrowth. It leaves the test field in place. The command
-does not wait out natural growth, test a real player breaking the block or prove client visuals.
+also checks the configured numeric regrowth stage, rewound stored age and post-harvest NBT.
+Use a temporary `.regrowFrom(4)` override to exercise intermediate regrowth. It does not wait
+out natural growth, test a real player breaking the block or prove client visuals.
 After `save-all`, `stop`, and restart, `agricrops saved <x> <y> <z>` checks persisted progress and
 depletion. The ordinary inspection/definitions commands do not need the fixture launch flag.

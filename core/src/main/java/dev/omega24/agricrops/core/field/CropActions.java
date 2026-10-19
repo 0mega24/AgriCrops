@@ -46,7 +46,7 @@ public final class CropActions {
     public static Harvest harvest(CropDefinition definition, CropState crop) {
         requireSameSpecies(definition, crop);
         return crop.progress() >= definition.timeline().totalTicks()
-                ? new Harvest(crop.at(0), outputCount(crop)) : new Harvest(crop, 0);
+                ? new Harvest(crop.at(definition.regrowthTicks()), outputCount(crop)) : new Harvest(crop, 0);
     }
 
     private static int outputCount(CropState crop) { return 1 + crop.genome().get(StandardStat.YIELD) / 16; }

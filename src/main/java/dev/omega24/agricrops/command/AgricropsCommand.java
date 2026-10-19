@@ -37,7 +37,8 @@ public final class AgricropsCommand extends CommandBase {
         if (args.length == 1 && args[0].equals("definitions")) {
             CropDefinitions.all().values().forEach(def -> sender.sendMessage(new TextComponentString(
                     def.id() + " seed=" + def.seed() + " duration=" + def.timeline().totalTicks()
-                            + " costs=" + def.waterCost() + "/" + def.nutrientCost())));
+                            + " costs=" + def.waterCost() + "/" + def.nutrientCost()
+                            + " regrowthStage=" + def.regrowthStage() + "@" + def.regrowthTicks())));
             return;
         }
         if (args.length != 4) throw new WrongUsageException(getUsage(sender));
@@ -59,7 +60,8 @@ public final class AgricropsCommand extends CommandBase {
         CropTile tile = tile(world, pos);
         sender.sendMessage(new TextComponentString((args[0].equals("verify") ? "FIRST_SLICE_OK" : "SAVE_RELOAD_OK")
                 + " pos=" + pos + " progress=" + tile.crop().progress() + " nutrients=" + tile.soil().nutrients()
-                + " water=" + tile.soil().water()));
+                + " water=" + tile.soil().water() + " harvestRegrowth="
+                + CropDefinitions.get(tile.crop().crop()).regrowthTicks()));
     }
 
     private static CropTile tile(World world, BlockPos pos) throws CommandException {
@@ -93,7 +95,12 @@ public final class AgricropsCommand extends CommandBase {
         world.removeTileEntity(pos); world.setTileEntity(pos, restored); tile = restored;
         activate(world, pos, player);
         int products = countWheat(player);
-        check(products > 0 && tile.crop().progress() == 0, "Actual harvest did not produce/reset");
+        check(products > 0 && tile.crop().progress() == definition.regrowthTicks(), "Actual harvest did not produce/return to the configured stage");
+        check(world.getBlockState(pos).getValue(GameContent.CROP_STICKS.AGE)
+                == definition.regrowthStage(), "Harvest stored age did not rewind to the configured numeric stage");
+        check(tile.crop().genome().equals(planted.genome()) && tile.crop().origin() == planted.origin(), "Harvest replaced the specimen");
+        CropTile harvested = new CropTile(); harvested.readFromNBT(tile.writeToNBT(new NBTTagCompound()));
+        check(!harvested.quarantined() && harvested.crop().progress() == definition.regrowthTicks(), "Post-harvest NBT lost the regrowth stage");
         player.inventory.mainInventory.set(1, player.getHeldItem(EnumHand.MAIN_HAND));
         player.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
         activate(world, pos, player);

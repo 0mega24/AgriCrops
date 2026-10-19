@@ -12,6 +12,8 @@ Updated: 2026-10-19. Archive: `75d6f7baa52251ae7260156b4c23a0a4a9357dbb` on
 - Bounded build/test defaults and Java CI workflow; no legacy gameplay/framework or web product.
 - Crop sticks block/item/recipe and native wheat seed lifecycle: paid growth, light/soil checks,
   mature harvest/regrowth and native seed specimen drop/replant calculation.
+- Numeric right-click regrowth: default stored stage 1, CT `.regrowFrom(0..6)` for custom earlier/
+  intermediate stages. Stage 7 is mature and rejected; genome/origin remain unchanged.
 - Water bucket and bone-meal inputs, simple nearby-water supply and position-owned surface pools.
 - Strict versioned specimen/tile/soil persistence, retained rejected payloads and observed soil
   invalidation. Rejected saves do not silently become fresh genomes/fertility.
@@ -27,7 +29,7 @@ See `first-crop.md` for precise provisional mechanics and authoring limits.
 
 2026-10-19 local verification, Java 8:
 
-- 26 tests pass: 17 pure core (6 genome, 5 timeline, 6 lifecycle/resource/catalog), 7 persistence
+- 34 tests pass: 24 pure core (6 genome, 5 timeline, 6 lifecycle/resource/catalog, 7 numeric regrowth), 8 persistence
   and 2 static native-resource wiring tests. Zero failures/errors. Covers paid progress/yield,
   no repeated free harvest, blockers/depletion, overrides, strict decoding/quarantine and native
   stage/texture references. Static resources do not prove client model baking.
@@ -45,8 +47,8 @@ See `first-crop.md` for precise provisional mechanics and authoring limits.
   download predicate in offline mode. Full clean dependency preparation/network build is still
   unverified; the cached-output build is not a clean-checkout qualification.
 - CI is configured for core tests and a full Forge build but has not been run remotely.
-- Three serialized headless servers reached ready, saved and exited normally via `stop`;
-  see the runtime evidence below. No graphical client launched.
+- Initial three headless servers and a numeric-regrowth follow-up reached ready, saved and
+  exited normally via `stop`; see the evidence below. No graphical client launched.
 
 ### Actual dedicated-server / CraftTweaker evidence
 
@@ -71,6 +73,14 @@ intervals with a fake player. Drop calculation/direct block replacement is teste
 player's entire breaking/pickup path. This is not a natural-time survival playthrough or visual
 QA. Save/reload is actual normal shutdown and disk restart, not only helper serialization.
 All servers are stopped; new runtime/logs/script/world stay ignored under `run/`.
+
+Numeric harvest follow-up: actual CT `.regrowFrom(4)` resolves as `regrowthStage=4@1372` with
+the 2400-tick test timeline. At `(16,90,0)`, the real harvest handler passes assertions for stored
+age 4, preserved genome/origin, no repeat output and post-harvest NBT. Full fixture reports
+`FIRST_SLICE_OK ... harvestRegrowth=1372`, then saves/stops normally. This verifies server state,
+not client appearance. The temporary test override is restored to default `.regrowFrom(1)`
+afterward; the baseline source example explicitly uses 1. No NBT schema change is needed because
+the existing active progress round-trips the reset point.
 
 The final end-of-world-tick soil-event deferral guard was rebuilt/tested after runtime checks;
 canceled third-party block-event interactions still need a dedicated integration fixture.

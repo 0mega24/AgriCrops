@@ -33,7 +33,7 @@ public class FirstCropLifecycleTest {
         for (int i = 0; i < 4; i++) { CropActions.Step step = CropActions.step(def, state, soil, 15); state = step.crop; soil = step.soil; }
         assertEquals(20, soil.water()); assertEquals(20, soil.nutrients());
         CropActions.Harvest first = CropActions.harvest(def, state);
-        assertEquals(1, first.count); assertEquals(0, first.crop.progress());
+        assertEquals(1, first.count); assertEquals(def.regrowthTicks(), first.crop.progress());
         assertEquals(SeedOrigin.CRAFTED, first.crop.origin());
         assertEquals(0, CropActions.harvest(def, first.crop).count);
     }

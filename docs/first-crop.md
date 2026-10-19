@@ -13,8 +13,9 @@ This is an early wheat lifecycle, not the full genetics mod. Use a new disposabl
    irrigation mechanic.
 4. Soil starts with 5000 nutrients when first observed; bone meal adds 2000, consuming one item.
    Water and nutrients each cap at 10000. Both care inputs replenish pools, not instant growth.
-5. Empty-hand use harvests mature wheat and restarts the retained plant. Sneak-use or hold a
-   stick to inspect crop phase, overall progress, pool percentages and the current blockage.
+5. Empty-hand right-click harvests mature wheat and returns the retained plant to numeric stage 1.
+   Repeat-bearing crops can return to an authored intermediate stage instead. Sneak-use or hold
+   a stick to inspect biological phase, progress, pools and blockers.
 6. Breaking planted sticks calculates one native wheat seed with retained specimen NBT and one
    set of sticks, not an additional mature harvest. Replanting the seed preserves genes/origin
    and resets development. Replacing sticks does not reset position-owned soil fertility.
@@ -30,6 +31,25 @@ the yield output count. Yield gives `1 + floor(yield / 16)` wheat; Growth raises
 per interval from 20 to 40 across its range. Other stored stats are not yet mechanically applied.
 These are first-slice coefficients, not claims of finished genetics/balance.
 
+### Right-click regrowth
+
+The plant stays planted and keeps its genome/origin. `regrowFrom` is an integer method on the
+CraftTweaker crop builder: `.regrowFrom(1)` is the default. It uses actual crop-sticks stored age
+IDs, not biological phase names: 0 is earliest, 1 is the normal harvest reset, 2..6 are intermediate,
+7 is mature. A mature/out-of-range target is rejected to prevent instant repeat harvests. Crops
+that retain their flowering/fruiting structure can author an appropriate intermediate number,
+for example `.regrowFrom(4)`; there is no automatic assumption about a crop's archetype.
+
+The current wheat profile maps development progress to ages 0..6 and reserves 7 for maturity.
+Regrowth resumes at `ceil(totalTicks * stage / 7)`. With 4800 total ticks, stage 1 resumes at 686,
+stage 4 at 2743, and stage 6 at 4115. Durations too short to represent the requested stored age
+are rejected rather than silently choosing another number. Biological phase windows remain
+independent of these numeric stage IDs. Other native age profiles/imports are not implemented.
+
+Remaining development still requires soil/light/water/nutrients; the stored age and visuals rewind
+with progress. Premature clicks do not grant products or move seedlings to the regrowth target.
+Shorter repeat cycles change output/resources per time and require explicit author balancing.
+
 ## CraftTweaker authoring starts here
 
 CraftTweaker is optional. The bridge is compiled against `1.12-4.1.20.715`; the base mod loads
@@ -39,7 +59,7 @@ Use `.replace()` for an existing crop ID and `.register()` for a new one. Duplic
 rejected rather than ambiguously choosing a crop. Invalid values are not clamped.
 
 Supported fields now: namespaced crop/seed/product/soil IDs, localized crop-name key, four phase
-durations, per-development-tick water/nutrient costs, light range and eight baseline stats in enum
+durations, numeric post-harvest regrowth stage, per-development-tick water/nutrient costs, light range and eight baseline stats in enum
 order: Growth, Yield, Resilience, Water affinity, Fertility response, Light tolerance, Temperature
 tolerance, Mutation chance. Magnitudes use 0..63; directional tolerances use -63..63. Growth time is capped at 288000
 active ticks; positive costs at 100; light within 0..15. Metadata/NBT ingredient predicates are not
