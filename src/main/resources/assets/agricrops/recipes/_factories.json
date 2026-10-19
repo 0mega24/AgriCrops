@@ -1,7 +1,0 @@
-{
-	"ingredients": {
-	},
-	"recipes": {
-		"custom_wood_shaped": "dev.omega24.agricrops.crafting.CustomWoodShapedRecipe$Factory"
-	}
-}

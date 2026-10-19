@@ -1,37 +1,18 @@
 Agricrops
 =========
 
-Agricrops is a fork ("spiritual successor") of AgriCraft, a Minecraft mod
-originally created by InfinityRaider and the AgriCraft contributors.
+This main branch starts a new Java implementation in October 2026. The previous AgriCraft hard
+fork is preserved on codex/archive-agricrops-fork-2026-10-19 at commit
+75d6f7baa52251ae7260156b4c23a0a4a9357dbb, including its original notices and vendored assets/code.
 
-AgriCraft is licensed under the MIT License. Its original copyright notice and
-license terms are retained verbatim in the LICENSE file at the root of this
-repository, as required by that license:
+AgriCraft was created by InfinityRaider and contributors, under the MIT License. The original
+copyright notice is retained in LICENSE and the Git history. Build setup, Gradle wrapper and
+project knowledge were retained; the legacy AgriCore, InfinityLib-dependent implementation,
+compatibility code and art catalogue are not carried into this source tree.
 
-    Copyright (c) 2014 InfinityRaider
+New Agricrops source is copyright (c) 2026 the Agricrops authors and is distributed under the
+same MIT terms. Reusing any archived code/assets later must retain their applicable notices.
+Runtime references to installed Minecraft/other-mod resources do not bundle those resources.
 
-Fork details
-------------
-  Upstream repository : https://github.com/AgriCraft/AgriCraft
-  Upstream branch     : 1.12.2
-  Fork point (commit) : d889388a "Added config option to disable agricraft commands"
-
-This project also bundles, as git submodules, two further MIT-licensed libraries
-by InfinityRaider / the AgriCraft org:
-
-  lib/AgriCore     https://github.com/AgriCraft/AgriCore     (branch 1.12.2)
-  lib/InfinityLib  https://github.com/InfinityRaider/InfinityLib
-  lib/AgriPlants   https://github.com/AgriCraft/AgriPlants    (bundled plant JSON defaults)
-
-Each retains its own upstream license; see the respective submodule directories.
-
-Modifications
--------------
-Code unchanged from upstream AgriCraft remains (c) its original authors under the
-MIT License above. Changes made as part of the Agricrops divergence — beginning
-with the rename of the mod id from `agricraft` to `agricrops`, and the migration
-of the Java base package out of the upstream namespace
-(`com.infinityraider.agricraft`) into the fork's own namespace
-(`dev.omega24.agricrops`) — are (c) the Agricrops authors and are likewise
-released under the MIT License. Bundled libraries (AgriCore, InfinityLib) keep
-their original `com.infinityraider.*` namespace to mark the borrowed/new boundary.
+Minecraft, Forge, Gradle and optional integration mods retain their respective ownership and
+licenses. This project does not redistribute Minecraft or claim authorship of native crop art.

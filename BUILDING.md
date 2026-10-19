@@ -1,94 +1,50 @@
-# Building Agricrops
+# Building the new Agricrops
 
-Agricrops is a Forge **1.12.2** mod, hard-forked from AgriCraft. It builds with
-**RetroFuturaGradle (RFG)** — the maintained replacement for the long-dead
-ForgeGradle 2.x — on **Gradle 8.9**, targeting **Java 8**. This is the same core
-build stack GregTech CEu and the GTNH ExampleMod use.
+## Toolchain
 
-## Prerequisites
-
-- **Java 8** (Forge 1.12.2 targets it; Gradle 8.9 runs fine on JDK 8).
-- **Git**.
-- On **NixOS**: use [`shell.nix`](./shell.nix) (`nix-shell`) — `runClient` needs
-  prebuilt LWJGL/GLFW natives in an FHS layout. See `crop-mod-getting-started.md` §1.
-
-## Build
+Java 8, Gradle 8.9 (included wrapper), RetroFuturaGradle 1.4.0, Minecraft Forge 1.12.2 and
+snapshot MCP mappings 20180710. The working build coordinates/wrapper are retained from the
+archived prototype; gameplay sources and the rule module are new. No Node/npm or InfinityLib/
+AgriCore dependency is required.
 
 ```sh
-nix-shell            # NixOS only; otherwise just make sure Java 8 is active
-./gradlew build      # first run decompiles Minecraft, then builds build/libs/agricrops-0.1.0.jar
-./gradlew runClient  # launch a dev client
-./gradlew test       # run deterministic Java tests
+cd /home/slidy/rand/AgriCrops
+./gradlew :core:test --no-daemon --max-workers=1
+./gradlew build --no-daemon --max-workers=1
 ```
 
-On the first `runServer`, RetroFuturaGradle asks whether to use online mode and then asks the person
-starting the server to accept Mojang's Minecraft EULA. These are interactive prompts; the project
-does not pre-answer them or commit an `eula.txt`. After the person running it accepts, wait for the
-`Done! For help` line, enter `stop`, and confirm Gradle exits successfully.
+The first Forge build may need network downloads and Minecraft preparation. The pure core tests
+do not launch Minecraft or require a display. Gradle defaults to one worker, no parallel projects
+and a 512 MiB heap; tests use at most 128 MiB. Forge preparation may have additional tool processes
+and is a separate qualification from core tests. Do not run `clean` reflexively: it removes
+expensive prepared dependencies.
 
-No submodules, no `setupDecompWorkspace`, no QuikMod — RFG handles the MCP
-decompile/deobf as part of the build.
+## Deliberate runtime checks
 
-The external simulator was withdrawn on 2026-10-19. Its source is retained as historical
-material; companion Gradle tasks and Node/npm onboarding are removed. The planned product is Java
-with in-game tools and optional CraftTweaker authoring, per Decision 0002. Following the reported
-host crash, qualify client and dedicated server separately with declared memory limits and normal
-shutdown; do not run both plus heavy Gradle work concurrently.
+```sh
+/home/slidy/rand/AgriCrops/gradlew --project-dir /home/slidy/rand/AgriCrops runClient
+/home/slidy/rand/AgriCrops/gradlew --project-dir /home/slidy/rand/AgriCrops runServer
+```
 
-## What changed from the AgriCraft build
+Run one Minecraft process at a time after builds finish. JavaExec tasks are configured with a
+256 MiB initial / 1 GiB maximum heap. Use normal game exit or server `stop`; do not destroy
+native windows to terminate the client. Runtime startup and visual behavior are not established
+by compiling this scaffold. Follow the verification record in `docs/implementation-status.md`.
 
-This fork migrated off AgriCraft's dead build stack (ForgeGradle 2.3-SNAPSHOT +
-the QuikMod plugin + `http://` mavens that no longer exist):
+The old dev world's EULA acceptance/configs remain in the local archive and are not copied into
+the new runtime. The owner accepted Minecraft's EULA in this conversation; complete the actual
+development server setup deliberately when runtime testing is resumed. Never open an old
+Agricrops world with this new implementation as a migration test without an expendable copy.
 
-- **RetroFuturaGradle** replaces ForgeGradle 2.x. Config lives in `build.gradle` /
-  `settings.gradle` / `gradle.properties` (no auto-managed buildscript, no blowdryer).
-- **Dependencies come from live repos**: GTNH Nexus, CurseMaven (pull any mod by
-  CurseForge id via `rfg.deobf('curse.maven:slug-projectId:fileId')`), BlameJared,
-  Maven Central.
-- **InfinityLib** is now a prebuilt, deobfuscated dependency
-  (`curse.maven:infinitylib-251396:3317119` — InfinityLib 1.12.1 for MC 1.12.2, the
-  exact version the old submodule pinned) instead of a source submodule.
-- **AgriCore** was vendored into the repo at `src/main/java/com/agricraft/agricore`
-  (kept in its original `com.agricraft.*` namespace to mark the borrowed boundary,
-  like InfinityLib). Per design §11/§12 its stat/genetics logic is slated to be
-  replaced by a custom `CropStatCalculator`; the rest stays as-is for now. It pulls
-  `org.reflections` (declared in `build.gradle`).
-- **AgriPlants** (542 upstream default plant/mutation JSONs for other mods) was
-  dropped — the fork defines its own species via the design's ZenScript-driven
-  registries (§7/§11), so the upstream defaults are not carried over.
-- **QuikMod token substitution is gone.** `Reference.java` and `mcmod.info` now hold
-  plain literal values (mod id `agricrops`, package `dev.omega24.agricrops`, version
-  `0.1.0`) instead of `${mod.x}` / `/*^...^*/` templates.
+On NixOS, `nix-shell` supplies Java/native libraries; the host also needs suitable graphics/audio.
+A host kernel panic requires independent diagnosis; replacing the mod does not establish its cause.
 
-## Status
+## Artifacts and CI
 
-`./gradlew build` is **green** — it produces `build/libs/agricrops-0.1.0.jar` (the
-reobfuscated mod jar) and `agricrops-0.1.0-dev.jar`. Verified with Temurin JDK 8.
+The root mod jar includes the core classes and license/notice. The standalone core jar is for
+Java development/testing, not another Forge mod. CI runs core tests followed by the mod build;
+it does not run a GUI or accept EULAs.
 
-Getting there needed three fixes beyond the scaffold (all committed):
-
-1. **Mappings**: RFG defaults to `stable_39`, but the source was written against
-   `snapshot_20180710` (set in the `minecraft {}` block). The wrong mappings rename
-   methods (`createIcon`/`getUnlocalizedName`/...) and broke `@Override` across ~34
-   files.
-2. **Dependency coordinates**: Actually Additions / The One Probe / EnderIO now come
-   from CurseMaven by file id (the original GAVs weren't on the live mavens).
-3. **Two upstream latent bugs**: `scala.actors.threadpool.Arrays` imports (only
-   compiled before because OpenComputers dragged Scala onto the classpath) → swapped
-   to `java.util.Arrays`; and a missing `AgriCommands` import in `IProxy.java` that
-   was already broken in upstream's tip commit `d889388a`.
-
-**Runtime load is verified**: a headless `./gradlew runServer` reaches
-`Done! For help` with `agricrops` loaded through all phases. The current standalone baseline
-registers eleven plants (including Weed and Winter Wheat) and one built-in mutation. One runtime
-fix was needed beyond the build: `org.reflections` was compile-only so it was
-missing from the jar at load time; its sole use (AgriCore's default-resource jar
-scan) was excised since the fork has no bundled defaults.
-
-Dedicated-server startup was reconfirmed on 2026-09-16: the development world reached
-`Done (5.521s)! For help`, and `stop` ended with `BUILD SUCCESSFUL`. See
-[`docs/verification/2026-09-16-server-smoke.md`](docs/verification/2026-09-16-server-smoke.md).
-
-`runClient` (a visual client, needs the `shell.nix` FHS natives for a real display) has also been
-used to join a world and verify crop-stick Wheat rendering with no texture-atlas errors. The full
-all-stages/harvest/reload checklist remains manual.
+Local archived generated Minecraft dependencies can be reused for bounded verification; record
+that fact separately from clean-checkout CI qualification. Old mod classes/resources must never
+be copied into new outputs. `docs/archive.md` identifies the preserved local material.

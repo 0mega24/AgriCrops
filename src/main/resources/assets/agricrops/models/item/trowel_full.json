@@ -1,6 +1,0 @@
-{
-	"parent": "agricrops:item/trowel",
-	"textures": {
-		"layer1": "agricrops:items/trowel_full"
-	}
-}

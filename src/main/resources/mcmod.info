@@ -1,22 +1,12 @@
 [
-	{
-		"modid": "agricrops",
-		"name": "Agricrops",
-
-		"version": "0.1.0",
-		"mcversion": "1.12.2",
-
-		"logoFile": "assets/agricrops/textures/logo.png",
-		"screenshots": [],
-
-		"parent":"",
-		"dependencies": [ "infinitylib" ],
-
-		"authorList": [ "omega24" ],
-		"credits": "Hard fork of AgriCraft by InfinityRaider and contributors (MIT). See NOTICE.",
-
-		"url": "https://github.com/0mega24/agricrops",
-
-		"description": "A GTNH-style crop mod: widened stat/genetics system, soil columns, watering, biome/elevation, weed risk, and OpenComputers telemetry."
-	}
+  {
+    "modid": "agricrops",
+    "name": "Agricrops",
+    "version": "${version}",
+    "mcversion": "1.12.2",
+    "description": "A new crop genetics and field-management mod. Foundation build; gameplay is in development.",
+    "authorList": ["omega24"],
+    "url": "https://github.com/0mega24/AgriCrops",
+    "credits": "Project history and acknowledgements are in NOTICE."
+  }
 ]

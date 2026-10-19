@@ -1,6 +1,0 @@
-{
-	"parent": "agricrops:item/base",
-	"textures": {
-		"layer0": "agricrops:items/magnifying_glass"
-	}
-}

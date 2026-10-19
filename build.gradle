@@ -1,79 +1,53 @@
 plugins {
     id 'java'
-    id 'idea'
-    id 'eclipse'
-    // RetroFuturaGradle: the maintained replacement for the dead ForgeGradle 2.x.
-    // Same core stack GregTech CEu and the GTNH ExampleMod build on.
     id 'com.gtnewhorizons.retrofuturagradle' version '1.4.0'
 }
 
-// Agricrops — a GTNH-style crop mod for Minecraft 1.12.2, hard-forked from AgriCraft.
-// See BUILDING.md for the full picture (JDK, submodule history, dependency notes).
-
-group = 'dev.omega24.agricrops'
-version = '0.1.0'
-
-base {
-    archivesName = 'agricrops'
-}
-
-java {
-    toolchain {
-        // Forge 1.12.2 targets Java 8. (Jabel-style Java-17-syntax-on-8 can be added
-        // later if desired; the current source is plain Java 8.)
-        languageVersion = JavaLanguageVersion.of(8)
+allprojects {
+    group = 'dev.omega24.agricrops'
+    version = '0.2.0-SNAPSHOT'
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
     }
 }
 
+base { archivesName = 'agricrops' }
+java { toolchain { languageVersion = JavaLanguageVersion.of(8) } }
+
 minecraft {
     mcVersion = '1.12.2'
-    // Match the MCP mappings the AgriCraft source was written against
-    // (was mod.properties: version_mappings = snapshot_20180710). Using RFG's
-    // default stable_39 renames methods (createIcon/getUnlocalizedName/...) and
-    // breaks @Override across the codebase.
     mcpMappingChannel = 'snapshot'
     mcpMappingVersion = '20180710'
     username = 'Developer'
 }
 
-repositories {
-    maven {
-        name = 'GTNH Maven'
-        url = 'https://nexus.gtnewhorizons.com/repository/public/'
-    }
-    maven {
-        // Pull any mod dependency straight from CurseForge by project/file id.
-        name = 'CurseMaven'
-        url = 'https://cursemaven.com'
-        content { includeGroup 'curse.maven' }
-    }
-    maven {
-        name = 'BlameJared'
-        url = 'https://maven.blamejared.com'
-    }
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
-    // --- Base library agricrops is built on (prebuilt + deobfuscated) ---
-    // InfinityLib 1.12.1 for MC 1.12.2 — the exact version the old submodule pinned.
-    implementation rfg.deobf('curse.maven:infinitylib-251396:3317119')
+    implementation project(':core')
+}
 
-    // gson (used by the vendored AgriCore) is provided on the Minecraft classpath.
+// Keep the rule module available inside the distributed mod, not as another required mod jar.
+evaluationDependsOn(':core')
+tasks.named('jar', Jar) {
+    dependsOn ':core:classes'
+    from project(':core').sourceSets.main.output
+    from(['LICENSE', 'NOTICE']) { into 'META-INF' }
+}
 
-    // --- Mod integrations: compile the compat/ classes (soft deps, gated by
-    //     Loader.isModLoaded at runtime, so compileOnly here). Coordinates carried
-    //     over from the original AgriCraft build. If any fails to resolve from the
-    //     mavens above, swap to a CurseMaven file id:
-    //     rfg.deobf('curse.maven:<slug>-<projectId>:<fileId>').
-    compileOnly rfg.deobf('curse.maven:opencomputers-223008:6608102')   // OpenComputers (OC telemetry, design §9)
-    compileOnly rfg.deobf('curse.maven:baubles-227083:2518667')         // Baubles 1.5.2
-    compileOnly rfg.deobf('mezz.jei:jei_1.12.2:4.16.1.302')             // JEI
-    compileOnly rfg.deobf('vazkii.botania:Botania:r1.10-353')           // Botania (resolves from GTNH Nexus)
-    compileOnly rfg.deobf('curse.maven:actually-additions-228404:3117927')                    // Actually Additions r152
-    compileOnly(rfg.deobf('curse.maven:the-one-probe-245211:2667280')) { transitive = false } // The One Probe 1.4.28
-    compileOnly(rfg.deobf('curse.maven:ender-io-64578:3328811')) { transitive = false }        // EnderIO 5.3.70
-    compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.715' // CraftTweaker (ZenScript authoring, design §7/§11) - pulls in CraftTweaker2-API + ZenScript transitively
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'modVersion', project.version
+    filesMatching('mcmod.info') { expand(version: project.version) }
+}
 
-    testImplementation 'junit:junit:4.13.2'
+tasks.named('check') { dependsOn ':core:check' }
+
+tasks.withType(Test).configureEach {
+    maxParallelForks = 1
+    maxHeapSize = '128m'
+}
+
+tasks.withType(JavaExec).configureEach {
+    minHeapSize = '256m'
+    maxHeapSize = '1G'
 }
