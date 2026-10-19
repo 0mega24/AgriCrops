@@ -18,10 +18,22 @@ build stack GregTech CEu and the GTNH ExampleMod use.
 nix-shell            # NixOS only; otherwise just make sure Java 8 is active
 ./gradlew build      # first run decompiles Minecraft, then builds build/libs/agricrops-0.1.0.jar
 ./gradlew runClient  # launch a dev client
+./gradlew test       # run deterministic Java tests
 ```
+
+On the first `runServer`, RetroFuturaGradle asks whether to use online mode and then asks the person
+starting the server to accept Mojang's Minecraft EULA. These are interactive prompts; the project
+does not pre-answer them or commit an `eula.txt`. After the person running it accepts, wait for the
+`Done! For help` line, enter `stop`, and confirm Gradle exits successfully.
 
 No submodules, no `setupDecompWorkspace`, no QuikMod — RFG handles the MCP
 decompile/deobf as part of the build.
+
+The external simulator was withdrawn on 2026-10-19. Its source is retained as historical
+material; companion Gradle tasks and Node/npm onboarding are removed. The planned product is Java
+with in-game tools and optional CraftTweaker authoring, per Decision 0002. Following the reported
+host crash, qualify client and dedicated server separately with declared memory limits and normal
+shutdown; do not run both plus heavy Gradle work concurrently.
 
 ## What changed from the AgriCraft build
 
@@ -67,11 +79,16 @@ Getting there needed three fixes beyond the scaffold (all committed):
    was already broken in upstream's tip commit `d889388a`.
 
 **Runtime load is verified**: a headless `./gradlew runServer` reaches
-`Done! For help` with `agricrops` loaded through all phases (Soils/Plants/Mutations
-register 0/0 — empty, since the upstream default content was dropped). One runtime
+`Done! For help` with `agricrops` loaded through all phases. The current standalone baseline
+registers eleven plants (including Weed and Winter Wheat) and one built-in mutation. One runtime
 fix was needed beyond the build: `org.reflections` was compile-only so it was
 missing from the jar at load time; its sole use (AgriCore's default-resource jar
 scan) was excised since the fork has no bundled defaults.
 
-`runClient` (a visual client, needs the `shell.nix` FHS natives for a real display)
-is the remaining manual checkpoint (getting-started §4).
+Dedicated-server startup was reconfirmed on 2026-09-16: the development world reached
+`Done (5.521s)! For help`, and `stop` ended with `BUILD SUCCESSFUL`. See
+[`docs/verification/2026-09-16-server-smoke.md`](docs/verification/2026-09-16-server-smoke.md).
+
+`runClient` (a visual client, needs the `shell.nix` FHS natives for a real display) has also been
+used to join a world and verify crop-stick Wheat rendering with no texture-atlas errors. The full
+all-stages/harvest/reload checklist remains manual.

@@ -5,6 +5,7 @@ import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Optional;
+import java.util.Random;
 
 public class StatCalculatorNormal extends StatCalculatorBase {
 
@@ -12,11 +13,11 @@ public class StatCalculatorNormal extends StatCalculatorBase {
      * calculates the new stats based on an input stat, the nr of neighbours and a divisor
      */
     @Override
-    protected int calculateStat(int input, int neighbours, int divisor) {
+    protected int calculateStat(int input, int neighbours, int divisor, Random rand) {
         if (neighbours == 1 && AgriCraftConfig.singleSpreadsIncrement) {
             neighbours = 2;
         }
-        int newStat = (input + (int) Math.round(Math.abs(neighbours - 1) * Math.random())) / divisor;
+        int newStat = (input + (int) Math.round(Math.abs(neighbours - 1) * rand.nextDouble())) / divisor;
         return CropStat.clamp(newStat);
     }
 

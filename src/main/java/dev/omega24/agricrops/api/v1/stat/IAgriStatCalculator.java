@@ -18,10 +18,12 @@ public interface IAgriStatCalculator {
      *
      * @param child the child that was the result of the spreading.
      * @param input a List containing all neighboring crops
+     * @param rand the caller/world random source
      * @return an ISeedStats object containing the resulting stats
      */
     @Nonnull
-    IAgriStat calculateSpreadStats(@Nonnull IAgriPlant child, @Nonnull Collection<IAgriCrop> input);
+    IAgriStat calculateSpreadStats(@Nonnull IAgriPlant child, @Nonnull Collection<IAgriCrop> input,
+                                   @Nonnull Random rand);
 
     /**
      * Calculates the stats for a mutation.

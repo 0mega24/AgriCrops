@@ -10,6 +10,8 @@ import dev.omega24.agricrops.api.v1.render.RenderMethod;
 import dev.omega24.agricrops.api.v1.requirement.IGrowthRequirement;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
+import dev.omega24.agricrops.farming.GenomeFactory;
+import dev.omega24.agricrops.reference.AgriNBT;
 import dev.omega24.agricrops.farming.growthrequirement.GrowthReqBuilder;
 import dev.omega24.agricrops.init.AgriItems;
 import dev.omega24.agricrops.reference.Constants;
@@ -179,7 +181,12 @@ public class CodePlant implements IAgriPlant {
     @Nonnull
     @Override
     public ItemStack getSeed() {
-        return this.seedItems.get(0).toStack();
+        final ItemStack stack = this.seedItems.get(0).toStack();
+        final net.minecraft.nbt.NBTTagCompound tag = new net.minecraft.nbt.NBTTagCompound();
+        tag.setString(AgriNBT.SEED, this.id);
+        GenomeFactory.getInstance().createFreshStats(this.id, false).writeToNBT(tag);
+        stack.setTagCompound(tag);
+        return stack;
     }
 
     @Nonnull

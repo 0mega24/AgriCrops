@@ -31,6 +31,8 @@ Schematic_to_Java*
 schematics/
 
 # Ignore Dependencies
+node_modules/
+.test-dist/
 libs/
 AgriCraft_Dependencies.rar
 dependencies.zip

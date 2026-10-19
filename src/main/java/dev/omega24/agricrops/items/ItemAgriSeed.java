@@ -6,6 +6,7 @@ import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.farming.PlantStats;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import dev.omega24.agricrops.items.tabs.AgriTabs;
 import dev.omega24.agricrops.reference.AgriNBT;
 import dev.omega24.agricrops.utility.NBTHelper;
@@ -37,13 +38,12 @@ public class ItemAgriSeed extends ItemBase implements IAgriAdapter<AgriSeed>, IA
     @Override
     public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
         if (tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
-            final PlantStats baseStat = new PlantStats();
             for (IAgriPlant plant : AgriApi.getPlantRegistry().all()) {
                 if (plant.getSeedItems().stream().anyMatch(s -> s.isItemEqual(this))) {
                     ItemStack stack = new ItemStack(this);
                     NBTTagCompound tag = new NBTTagCompound();
                     tag.setString(AgriNBT.SEED, plant.getId());
-                    baseStat.writeToNBT(tag);
+                    GenomeFactory.getInstance().createFreshStats(plant.getId(), false).writeToNBT(tag);
                     stack.setTagCompound(tag);
                     list.add(stack);
                 }
@@ -85,7 +85,7 @@ public class ItemAgriSeed extends ItemBase implements IAgriAdapter<AgriSeed>, IA
         IAgriPlant plant = AgriApi.getPlantRegistry().get(tag.getString(AgriNBT.SEED)).orElse(null);
         IAgriStat stat = AgriApi.getStatRegistry().valueOf(tag).orElse(null);
         if (plant != null && stat != null) {
-            return Optional.of(new AgriSeed(plant, stat));
+            return Optional.of(GenomeFactory.getInstance().createSeed(plant, stat));
         } else {
             return Optional.empty();
         }

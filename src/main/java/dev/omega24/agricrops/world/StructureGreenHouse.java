@@ -3,7 +3,6 @@ package dev.omega24.agricrops.world;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
-import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.init.AgriBlocks;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import dev.omega24.agricrops.tiles.TileEntityCrop;
@@ -179,17 +178,16 @@ public class StructureGreenHouse extends StructureVillagePieces.House1 {
         this.placeTorch(worldIn, EnumFacing.NORTH, 15, 4, 10, boundingBox);
         this.placeTorch(worldIn, EnumFacing.NORTH, 8, 4, 2, boundingBox);
 
-        Random rnd = new Random();
         List<IAgriPlant> plants = this.getPlantPool();
 
         for(int x=3;x<=7;x++) {
             for(int z=3;z<=7;z++) {
-                this.generateStructureCrop(worldIn, boundingBox, x, 2, z, (z%2==0 && x%2==0) || (x==5 &&z==5), rnd, plants);
+                this.generateStructureCrop(worldIn, boundingBox, x, 2, z, (z%2==0 && x%2==0) || (x==5 &&z==5), randomIn, plants);
             }
         }
         for(int x=9;x<=13;x++) {
             for(int z=3;z<=7;z++) {
-                this.generateStructureCrop(worldIn, boundingBox, x, 2, z, (z % 2 == 0 && x % 2 == 0) || (x == 11 && z == 5), rnd, plants);
+                this.generateStructureCrop(worldIn, boundingBox, x, 2, z, (z % 2 == 0 && x % 2 == 0) || (x == 11 && z == 5), randomIn, plants);
             }
         }
 
@@ -210,8 +208,7 @@ public class StructureGreenHouse extends StructureVillagePieces.House1 {
                 }
                 else {
                     if(plants.size() > 0) {
-                        IAgriStat randomStat = WorldGenerationHelper.getRandomStat(rnd);
-                        AgriSeed seed = WorldGenerationHelper.getRandomSeed(rnd, false, plants).withStat(randomStat);
+                        AgriSeed seed = WorldGenerationHelper.getRandomSeed(rnd, false, plants);
                         crop.setSeed(seed);
                     }
                 }

@@ -28,6 +28,9 @@ import javax.annotation.Nullable;
  */
 public class AttributeUnlockRegistry implements IAttributeUnlockRegistry {
 
+    /** Chance that an unstabilized trait carried by only one parent is lost. */
+    static final double UNSTABLE_DROPOUT_CHANCE = 0.5;
+
     private final Map<UnorderedPair<String>, List<AttributeUnlockRule>> rules;
     private final Set<UnorderedPair<String>> incompatible;
 
@@ -103,6 +106,19 @@ public class AttributeUnlockRegistry implements IAttributeUnlockRegistry {
             final Optional<LockedAttributeInstance> instanceA = parentA == null ? Optional.empty() : parentA.getLockedAttribute(attributeId);
             final Optional<LockedAttributeInstance> instanceB = parentB == null ? Optional.empty() : parentB.getLockedAttribute(attributeId);
             final boolean fresh = freshUnlocks.contains(attributeId);
+
+            // A trait carried by only one parent is fragile until it has bred true for the
+            // definition's stabilization threshold. Fresh unlocks are exempt on the generation
+            // in which they appear; otherwise they could disappear before the player ever sees
+            // them. A stable single-parent trait always survives, but still receives an absent
+            // allele from the non-carrier and may therefore be recessive in the offspring.
+            if (!fresh && instanceA.isPresent() != instanceB.isPresent()) {
+                final LockedAttributeInstance carried = instanceA.orElseGet(instanceB::get);
+                if (!carried.isStable(definition.get())
+                        && rand.nextDouble() < UNSTABLE_DROPOUT_CHANCE) {
+                    continue;
+                }
+            }
 
             final AttributeAllele alleleFromA = instanceA
                     .map(instance -> instance.randomAllele(rand))

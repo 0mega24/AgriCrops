@@ -7,6 +7,7 @@ import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import com.infinityraider.infinitylib.utility.WorldHelper;
 import java.util.List;
@@ -87,7 +88,7 @@ public class MutateStrategy implements IAgriCrossStrategy {
         // Return the mutation result.
         return stat
                 // Map the stat to an AgriSeed by adding the plant.
-                .map(s -> new AgriSeed(mutation.getChild(), s));
+                .map(s -> GenomeFactory.getInstance().createSeed(mutation.getChild(), s));
     }
 
     /**

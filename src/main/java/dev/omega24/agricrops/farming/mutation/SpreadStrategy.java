@@ -4,6 +4,7 @@ import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.mutation.IAgriCrossStrategy;
 import dev.omega24.agricrops.api.v1.seed.AgriSeed;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import com.infinityraider.infinitylib.utility.WorldHelper;
 
@@ -37,8 +38,8 @@ public class SpreadStrategy implements IAgriCrossStrategy {
             if (seed != null && rand.nextDouble() < seed.getPlant().getSpreadChance()) {
                 return AgriApi.getStatCalculatorRegistry()
                         .valueOf(seed.getPlant())
-                        .map(calc -> calc.calculateSpreadStats(seed.getPlant(), allNeighbours))
-                        .map(stat -> new AgriSeed(seed.getPlant(), stat));
+                        .map(calc -> calc.calculateSpreadStats(seed.getPlant(), allNeighbours, rand))
+                        .map(stat -> GenomeFactory.getInstance().createSeed(seed.getPlant(), stat));
             }
         }
         return Optional.empty();

@@ -38,7 +38,7 @@ public class AgriMutationRegistry extends AgriRegistry<IAgriMutation> implements
         parentIds.forEach(parentId -> Objects.requireNonNull(parentId, "The id of a parent for a mutation may not be null!"));
 
         // Step III. Map Child.
-        final IAgriPlant childPlant = AgriApi.getPlantRegistry().get(id).orElse(null);
+        final IAgriPlant childPlant = AgriApi.getPlantRegistry().get(childId).orElse(null);
 
         // Step IV. Abort If Child Missing.
         if (childPlant == null) {

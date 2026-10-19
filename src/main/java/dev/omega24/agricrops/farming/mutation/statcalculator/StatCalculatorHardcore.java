@@ -5,6 +5,7 @@ import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStatCalculator;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Optional;
+import java.util.Random;
 
 public class StatCalculatorHardcore extends StatCalculatorBase {
 
@@ -12,7 +13,7 @@ public class StatCalculatorHardcore extends StatCalculatorBase {
      * calculates the new stats based on an input stat, the nr of neighbours and a divisor
      */
     @Override
-    protected int calculateStat(int input, int neighbours, int divisor) {
+    protected int calculateStat(int input, int neighbours, int divisor, Random rand) {
         /*
         1 parent: 3/4 decrement, 1/4 nothing
         2 parents: 2/4 decrement, 1/4 nothing, 1/4 increment
@@ -22,18 +23,18 @@ public class StatCalculatorHardcore extends StatCalculatorBase {
         if (neighbours == 1 && AgriCraftConfig.singleSpreadsIncrement) {
             neighbours = 2;
         }
-        int newStat = getAction(neighbours).apply(input) / divisor;
+        int newStat = getAction(neighbours, rand).apply(input) / divisor;
         return CropStat.clamp(newStat);
     }
 
-    private Action getAction(int count) {
+    private Action getAction(int count, Random rand) {
         int totalWeight = 0;
         Action[] actions = Action.values();
         for (Action action : actions) {
             totalWeight = totalWeight + action.getWeight(count);
         }
         int randomIndex = -1;
-        double random = Math.random() * totalWeight;
+        double random = rand.nextDouble() * totalWeight;
         for (int i = 0; i < actions.length; i++) {
             random = random - actions[i].getWeight(count);
             if (random <= 0.0D) {

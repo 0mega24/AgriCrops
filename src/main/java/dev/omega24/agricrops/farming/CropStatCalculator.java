@@ -3,6 +3,7 @@ package dev.omega24.agricrops.farming;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
 import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
+import dev.omega24.agricrops.core.DefaultSpecies;
 import dev.omega24.agricrops.reference.AgriCraftConfig;
 import java.util.Random;
 
@@ -45,6 +46,14 @@ public final class CropStatCalculator {
      * elevation band — same shape as {@link #MIN_NUTRIENT_FACTOR}. Placeholder balance number.
      */
     private static final double MIN_HABITAT_FACTOR = 0.4;
+    private static final double MIN_ENVIRONMENT_FACTOR = 0.4;
+    private static final double NEUTRAL_TEMPERATURE = 0.8;
+    private static final double TEMPERATURE_PREFERENCE_RANGE = 0.8;
+    private static final double TEMPERATURE_FALLOFF = 1.5;
+    private static final double NEUTRAL_LIGHT = 12.0;
+    private static final double LIGHT_PREFERENCE_RANGE = 4.0;
+    private static final double LIGHT_FALLOFF = 12.0;
+    private static final double FROST_HARDINESS_PROTECTION = 0.75;
 
     private CropStatCalculator() {
     }
@@ -61,10 +70,15 @@ public final class CropStatCalculator {
      * plant's preferences (0..1, 1.0 = fully ideal or the plant has no preference at all), per
      * crop-mod-design.md §5.
      */
-    public static double growthTickChance(IAgriPlant plant, IAgriStat stat, double nutrientSatisfaction, double moistureSatisfaction, double habitatSatisfaction) {
+    public static double growthTickChance(IAgriPlant plant, IAgriStat stat, double nutrientSatisfaction,
+                                          double moistureSatisfaction, double habitatSatisfaction,
+                                          int lightLevel, double biomeTemperature) {
         final double growth = magnitude(stat, CropStat.GROWTH);
         final double base = (plant.getGrowthChanceBase() + growth * plant.getGrowthChanceBonus()) * AgriCraftConfig.growthMultiplier;
-        return base * nutrientFactor(stat, nutrientSatisfaction) * moistureFactor(stat, moistureSatisfaction) * habitatFactor(stat, habitatSatisfaction);
+        return base * nutrientFactor(stat, nutrientSatisfaction)
+                * moistureFactor(stat, moistureSatisfaction)
+                * habitatFactor(stat, habitatSatisfaction)
+                * environmentFactor(stat, lightLevel, biomeTemperature);
     }
 
     /**
@@ -101,6 +115,31 @@ public final class CropStatCalculator {
         final double resilience = magnitude(stat, CropStat.RESILIENCE) / CropStat.MAX;
         final double floor = MIN_HABITAT_FACTOR + (1.0 - MIN_HABITAT_FACTOR) * resilience;
         return floor + (1.0 - floor) * Math.min(1.0, Math.max(0.0, habitatSatisfaction));
+    }
+
+    /**
+     * Combined light/temperature fit. The two bipolar genes shift the preferred condition away
+     * from a generalist midpoint; they are adaptations, not magnitude scores. Frost Hardiness
+     * reduces only the cold-side temperature mismatch and therefore has no generic warm-biome
+     * bonus.
+     */
+    public static double environmentFactor(IAgriStat stat, int lightLevel, double biomeTemperature) {
+        final double lightPreference = NEUTRAL_LIGHT
+                + stat.get(CropStat.LIGHT_TOLERANCE) / (double) CropStat.MAX * LIGHT_PREFERENCE_RANGE;
+        final double lightFit = clamp01(1.0 - Math.abs(clamp(lightLevel, 0, 15) - lightPreference) / LIGHT_FALLOFF);
+
+        final double temperaturePreference = NEUTRAL_TEMPERATURE
+                + stat.get(CropStat.TEMP_TOLERANCE) / (double) CropStat.MAX * TEMPERATURE_PREFERENCE_RANGE;
+        double temperatureMismatch = Math.abs(biomeTemperature - temperaturePreference);
+        if (biomeTemperature < temperaturePreference) {
+            final double frostHardiness = stat.getLockedAttribute(DefaultSpecies.FROST_HARDINESS.getId())
+                    .map(attribute -> Math.max(0, attribute.getExpressedValue()) / (double) CropStat.MAX)
+                    .orElse(0.0);
+            temperatureMismatch *= 1.0 - FROST_HARDINESS_PROTECTION * frostHardiness;
+        }
+        final double temperatureFit = clamp01(1.0 - temperatureMismatch / TEMPERATURE_FALLOFF);
+        final double raw = (lightFit + temperatureFit) / 2.0;
+        return MIN_ENVIRONMENT_FACTOR + (1.0 - MIN_ENVIRONMENT_FACTOR) * raw;
     }
 
     /**
@@ -157,6 +196,14 @@ public final class CropStatCalculator {
 
     private static int magnitudeInt(IAgriStat stat, CropStat which) {
         return Math.max(0, stat.get(which));
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    private static double clamp01(double value) {
+        return clamp(value, 0.0, 1.0);
     }
 
 }

@@ -8,7 +8,7 @@ jar and CraftTweaker will not find them here. To actually use one:
    alongside Agricrops.
 2. Copy whichever files you want into `<instance>/scripts/` (CraftTweaker's own convention —
    it recursively loads every `.zs` file it finds there, alphabetically by default).
-3. Launch (or run `/ct reload` in an already-running world) and check the log/`/ct` command
+3. Launch/restart after edits (CraftTweaker 1.12 does not support ordinary script reload) and check the log/`/ct` command
    output for `agricrops:` lines — every registration in `compat/crafttweaker` logs what it
    did via `CraftTweakerAPI.logInfo`.
 

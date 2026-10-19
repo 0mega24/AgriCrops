@@ -15,6 +15,7 @@ import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.BlockRange;
 import dev.omega24.agricrops.api.v1.util.FuzzyStack;
 import dev.omega24.agricrops.farming.PlantStats;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import dev.omega24.agricrops.farming.growthrequirement.GrowthReqBuilder;
 import dev.omega24.agricrops.init.AgriItems;
 import dev.omega24.agricrops.reference.AgriNBT;
@@ -96,7 +97,7 @@ public class JsonPlant implements IAgriPlant {
                 .orElse(new ItemStack(AgriItems.getInstance().AGRI_SEED));
         NBTTagCompound tag = new NBTTagCompound();
         tag.setString(AgriNBT.SEED, this.getId());
-        new PlantStats().writeToNBT(tag);
+        GenomeFactory.getInstance().createFreshStats(this.getId(), false).writeToNBT(tag);
         stack.setTagCompound(tag);
         return stack;
     }

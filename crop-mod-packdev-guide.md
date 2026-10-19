@@ -1,6 +1,10 @@
 # Pack-dev guide — genetics reference and ZenScript authoring
 
-Companion to `crop-mod-design.md`. That doc covers *why* the mechanics work the way they do;
+Historical prototype API reference; see `docs/decisions/0002-java-in-game-scope.md` for the
+expanded Java/CT/import design and vault contracts. New phase/layer/lockout/UI features below
+are not automatically implemented by this old API.
+
+Originally companion to the missing `crop-mod-design.md`. That doc covered *why* mechanics work;
 this one is the pack-dev-facing reference for actually authoring content against them —
 what the 8 genetic stats do, what's exclusive to this fork vs. inherited from AgriCraft, and
 how to define crops/species/mutations without touching Java.
@@ -187,11 +191,10 @@ rather than silently assuming it already works this way.
   adds the mod's own analyzed-seed item to a plant's seed list, so anything added to the plant
   registry (Java or ZenScript) immediately shows up in the creative tab/JEI with a correctly
   textured, working seed.
-- `/ct reload` re-runs every script without a full relaunch — much faster than
-  recompile-and-relaunch for iterating on stat numbers, loot tiers, and soil profiles. Watch
-  the log for `agricrops:` lines; every `mods.agricrops.*` call logs what it did (or why it was
-  skipped — e.g. an id that's already registered, or a plant missing required `.textures(...)`/
-  `.products(...)` calls).
+- Restart after script edits. CraftTweaker 1.12 does not support ordinary script reload; the old
+  `/ct reload` guidance was incorrect. Inspect `crafttweaker.log` and `agricrops:` diagnostics.
+  Immediate duplicate registration also does not implement reliable definition replacement.
+  See https://docs.blamejared.com/1.12/en/Getting_Started/.
 - Reusing existing art (`.textures(...)` pointing at an already-vendored `crop_<id>`/
   `seed_<id>` pair) is the fastest way to get a new test plant fully rendering with zero asset
   work — see §2 above.

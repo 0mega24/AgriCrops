@@ -19,6 +19,7 @@ import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.api.v1.util.MethodResult;
 import dev.omega24.agricrops.core.WeedPlant;
 import dev.omega24.agricrops.farming.CropStatCalculator;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import dev.omega24.agricrops.farming.PlantStats;
 import dev.omega24.agricrops.farming.soil.SoilColumn;
 import dev.omega24.agricrops.farming.soil.SoilColumnHelper;
@@ -150,7 +151,9 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
             this.spread();
             return MethodResult.SUCCESS;
         } else if (CropStatCalculator.growthTickChance(this.seed.getPlant(), this.seed.getStat(),
-                this.nutrientSatisfaction(), this.moistureSatisfaction(), this.habitatSatisfaction()) > this.getRandom().nextDouble()) {
+                this.nutrientSatisfaction(), this.moistureSatisfaction(), this.habitatSatisfaction(),
+                this.getWorld().getLightFromNeighbors(this.pos.up()),
+                this.getWorld().getBiome(this.pos).getTemperature(this.pos)) > this.getRandom().nextDouble()) {
             SoilColumnHelper.getOrCreateColumn(this.getWorld(), this.pos.down())
                     .ifPresent(column -> column.drainNutrients(GROWTH_TICK_NUTRIENT_DRAIN));
             this.applyGrowthTick();
@@ -664,7 +667,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         final IAgriStat carryOver = this.seed.getStat();
         this.pushSignal("crop_died");
         AgriApi.getPlantRegistry().get(WeedPlant.ID)
-                .ifPresent(weed -> this.setSeed(new AgriSeed(weed, carryOver)));
+                .ifPresent(weed -> this.setSeed(GenomeFactory.getInstance().createSeed(weed, carryOver)));
     }
 
     // =========================================================================
@@ -685,7 +688,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         for (IAgriPlant p : AgriApi.getPlantRegistry().all()) {
             if (p.getSpawnChance() > this.getRandom().nextDouble() && this.isFertile(p)) {
                 this.setCrossCrop(false);
-                this.setSeed(new AgriSeed(p, new PlantStats()));
+                this.setSeed(GenomeFactory.getInstance().createFreshSeed(p));
                 return true;
             }
         }
@@ -895,7 +898,7 @@ public class TileEntityCrop extends TileEntityBase implements IAgriCrop, IDebugg
         final IAgriStat stat = AgriApi.getStatRegistry().valueOf(tag).orElse(null);
         final IAgriPlant plant = AgriApi.getPlantRegistry().get(tag.getString(AgriNBT.SEED)).orElse(null);
         if (stat != null && plant != null) {
-            this.seed = new AgriSeed(plant, stat);
+            this.seed = GenomeFactory.getInstance().createSeed(plant, stat);
         } else {
             this.seed = null;
         }

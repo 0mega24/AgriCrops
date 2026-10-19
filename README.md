@@ -1,53 +1,64 @@
-# AgriCraft [![build]][build-link] ![branch][] ![minecraft][] [![curse]][curse-link]
+# Agricrops
 
-Agricultural farming extended.
+Agricrops is an experimental hard fork of AgriCraft for Minecraft Forge 1.12.2. Its goal is a
+playable crop-breeding and field-management game: crops have inheritable genomes, respond to soil
+and environment, cross into discoverable hybrids, consume field resources, and can become unstable
+when pushed too far.
 
-## Contact [![contact]][contact-link]
-I have a Discord channel where you can contact me for support/suggestions which you don't think fit on this issue tracker. Also if you want to discuss something with me, this is the place to be!
+The intended product is **a standalone mod with optional pack-authoring tools**. A base Agricrops
+installation must eventually provide a complete early-game loop and a small mutation progression.
+CraftTweaker/ZenScript can extend or replace that content for modpacks, but it is not meant to be
+required for ordinary play.
 
-## Supported Versions
-AgriCraft has releases for Minecraft versions 1.7.10 and onwards, status per Minecraft version is as follows:
+## Current status
 
-| Version  | Notes
-|----------|:----------
-|![1.7.10] | No more work will be done on 1.7.10 by [InfinityRaider](https://github.com/InfinityRaider) or [RlonRyan](https://github.com/InfinityRaider/AgriCraft/commits/master?author=RlonRyan), if you want to maintain 1.7.10, contact us on Discord
-|![1.8.9]  | The 1.8.9 branch was highly experimental and the rendering is one big hack. Don't expect anything.
-|![1.9]    | Skipped 1.9, as it was an incredibly short-lived release.
-|![1.10]   | Port finished, but not moved out of alpha.
-|![1.11]   | Skipped 1.11.
-|![1.12]   | Port in progress.
+This is pre-release development software. The Forge/RFG build works, all eight standard genes have
+live gameplay consumers, fresh seeds use species templates, and the base jar ships its first
+breeding route: Wheat + Beetroot can produce Winter Wheat with Frost Hardiness. Deterministic Java
+tests exist, but the progression is small/unbalanced and the audit found trait propagation,
+numeric-contract, player-explanation and migration gaps. Do not use this version for an
+irreplaceable world. The external simulator was withdrawn on 2026-10-19; current design is an
+all-Java mod with CraftTweaker custom content, native crop imports/art reuse, deeper breeding/soil
+and in-game research/tools. These expanded mechanics are planned, not implemented here.
 
-## Bug Reports [![bug]][bug-link]
+The proposed repository source of truth is [the product design](docs/product-design.md), pending
+owner acceptance.
+The audited implementation sequence and honest feature status are in the
+[development roadmap](docs/roadmap/README.md). The latest owner-directed scope and links to the
+vault design contracts are in [Decision 0002](docs/decisions/0002-java-in-game-scope.md).
 
-Please report any and all bugs you might encounter while playing with this mod (this only applies to versions of Minecraft this mod is currently being developed for). Suggestions are also welcome.
-However before reporting a bug please update to the latest version of the mod to see if it still persists.
-If you want to post bug reports for older versions, make sure to tell me what version you are using and the version of Forge you are using.
-If you report a bug and I request more feedback, the label 'Awaiting reply' will be added, if I have had no response for 5 days after adding that label, the issue will be closed.
+## Build and development
 
+Agricrops targets Java 8 and Minecraft Forge 1.12.2 using RetroFuturaGradle.
 
-## Technical Documentation [![wiki]][wiki-link]
+```sh
+./gradlew build
+./gradlew runServer
+./gradlew runClient
+```
 
-AgriCraft is documented in the official GitHub wiki. Note that
-this kind of information is, most of the time, only needed by pack creators and not the average user.
+On NixOS, enter `nix-shell` before starting the visual client. See [BUILDING.md](BUILDING.md) for
+dependencies, build details, and known runtime checkpoints.
 
-[build-link]:https://travis-ci.org/AgriCraft/AgriCraft
-[build]:https://travis-ci.org/AgriCraft/AgriCraft.svg?branch=master "Travis-CI Build Status"
-[branch]:https://img.shields.io/badge/branch-master-aaaaff.svg "GitHub Branch"
-[minecraft]:https://agricraft.github.io/versions/1.12/minecraft.svg "Minecraft Version"
-[curse-link]:http://agricraft.github.io/curse
-[curse]:http://cf.way2muchnoise.eu/full_agricraft_downloads.svg "CurseForge"
-[contact-link]:https://agricraft.github.io/contact
-[contact]:https://agricraft.github.io/images/contact.svg "InfinityRaider Contact"
+Java tests and in-game tools are the development/learning surfaces; no Node/npm product is required.
 
-[bug-link]:https://agricraft.github.io/issues
-[bug]:https://agricraft.github.io/images/bug.svg "AgriCraft Issues"
+## Pack authoring
 
-[wiki-link]:https://agricraft.github.io/wiki
-[wiki]:https://agricraft.github.io/images/wiki.svg "AgriCraft GitHub Wiki"
+Pack authors can define soils, species, plants, mutations, locked attributes, and staged loot with
+CraftTweaker. The current API and its limitations are documented in
+[the pack-dev guide](crop-mod-packdev-guide.md), with working material in
+[`zenscript-examples/`](zenscript-examples/). Reload behavior is not yet safe: duplicate registry
+entries are currently retained rather than transactionally replaced.
 
-[1.7.10]:https://agricraft.github.io/versions/1.7.10/status.svg
-[1.8.9]:https://agricraft.github.io/versions/1.8.9/status.svg
-[1.9]:https://agricraft.github.io/versions/1.9/status.svg
-[1.10]:https://agricraft.github.io/versions/1.10/status.svg
-[1.11]:https://agricraft.github.io/versions/1.11/status.svg
-[1.12]:https://agricraft.github.io/versions/1.12/status.svg
+## Project boundaries
+
+- Minecraft Forge 1.12.2 and Java 8 are the supported game/runtime target.
+- The base mod must remain useful without CraftTweaker or OpenComputers.
+- Pack authoring extends the game; it does not excuse missing built-in progression.
+- The external simulator is withdrawn. Player learning, inspection and author previews belong in
+  the Java mod; deterministic Java tests verify the rule layer.
+- Upstream AgriCraft compatibility is best-effort until a migration policy is explicitly shipped.
+
+## License
+
+See [LICENSE](LICENSE) and [NOTICE](NOTICE).

@@ -5,6 +5,7 @@ import dev.omega24.agricrops.api.v1.seed.AgriSeed;
 import dev.omega24.agricrops.api.v1.stat.CropStat;
 import dev.omega24.agricrops.api.v1.stat.IAgriStat;
 import dev.omega24.agricrops.farming.PlantStats;
+import dev.omega24.agricrops.farming.GenomeFactory;
 import java.util.List;
 import java.util.Random;
 
@@ -25,14 +26,18 @@ public class WorldGenerationHelper {
      * @return an ItemStack containing a random SEED
      */
     public static AgriSeed getRandomSeed(Random rand, boolean setTag, List<IAgriPlant> plants) {
-        return new AgriSeed(
-                plants.get(rand.nextInt(plants.size())),
-                getRandomStat(rand)
-        );
+        final IAgriPlant plant = plants.get(rand.nextInt(plants.size()));
+        return GenomeFactory.getInstance().createSeed(plant, getRandomStat(rand, plant.getId()));
     }
 
     public static IAgriStat getRandomStat(Random rand) {
-        IAgriStat stat = new PlantStats();
+        return getRandomStat(rand, "");
+    }
+
+    public static IAgriStat getRandomStat(Random rand, String speciesId) {
+        IAgriStat stat = speciesId.isEmpty()
+                ? new PlantStats()
+                : GenomeFactory.getInstance().createFreshStats(speciesId, false);
         for (CropStat cropStat : CropStat.values()) {
             stat = stat.with(cropStat, getRandomStatValue(rand));
         }

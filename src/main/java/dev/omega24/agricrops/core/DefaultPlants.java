@@ -54,14 +54,24 @@ public final class DefaultPlants {
         forkTextured("sugarcane", "Sugar Cane", Arrays.asList("sand", "dirt", "grass", "tilled"),
                 new ItemStack(Items.REEDS), new ItemStack(Items.REEDS));
         forkTextured("melon", "Melon", Arrays.asList("tilled", "dirt", "grass"),
-                new ItemStack(Items.MELON), new ItemStack(Items.MELON_SEEDS));
+                new ItemStack(Items.MELON), new ItemStack(Items.MELON_SEEDS),
+                new ResourceLocation("minecraft:items/seeds_melon"));
         forkTextured("pumpkin", "Pumpkin", Arrays.asList("tilled", "dirt", "grass"),
-                new ItemStack(Item.getItemFromBlock(Blocks.PUMPKIN)), new ItemStack(Items.PUMPKIN_SEEDS));
+                new ItemStack(Item.getItemFromBlock(Blocks.PUMPKIN)), new ItemStack(Items.PUMPKIN_SEEDS),
+                new ResourceLocation("minecraft:items/seeds_pumpkin"));
 
         vanillaTextured("wheat", "Wheat", Collections.singletonList("tilled"),
-                8, "wheat_stage", "wheat_seeds", new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT_SEEDS));
+                8, "wheat_stage_", "seeds_wheat", new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT_SEEDS));
+        // The first built-in hybrid deliberately reuses vanilla wheat art while its mechanics
+        // are stabilized. It has no unverified seed item, so survival players must breed it.
+        register(new CodePlant("winter_wheat", "Winter Wheat", Collections.singletonList("tilled"),
+                8, RenderMethod.CROSSED,
+                stage -> new ResourceLocation("minecraft:blocks/wheat_stage_" + stage),
+                new ResourceLocation("minecraft:items/seeds_wheat"),
+                Collections.singletonList(new ItemStack(Items.WHEAT)), Collections.emptyList(),
+                Arrays.asList(BiomeDictionary.Type.COLD, BiomeDictionary.Type.SNOWY), 50, 110));
         vanillaTextured("beetroot", "Beetroot", Collections.singletonList("tilled"),
-                4, "beetroots_stage", "beetroot_seeds", new ItemStack(Items.BEETROOT), new ItemStack(Items.BEETROOT_SEEDS));
+                4, "beetroots_stage_", "beetroot_seeds", new ItemStack(Items.BEETROOT), new ItemStack(Items.BEETROOT_SEEDS));
         vanillaTextured("nether_wart", "Nether Wart", Collections.singletonList("soul_sand"),
                 3, "nether_wart_stage_", "nether_wart", new ItemStack(Items.NETHER_WART), new ItemStack(Items.NETHER_WART),
                 Collections.singletonList(BiomeDictionary.Type.NETHER), 0, 255);
@@ -74,14 +84,30 @@ public final class DefaultPlants {
     }
 
     private static void forkTextured(String id, String name, List<String> soils, ItemStack product, ItemStack unverifiedSeed) {
-        forkTextured(id, name, soils, product, unverifiedSeed, Collections.emptyList(), 0, 255);
+        forkTextured(id, name, soils, product, unverifiedSeed,
+                new ResourceLocation("agricrops:items/seed_" + id));
+    }
+
+    private static void forkTextured(String id, String name, List<String> soils, ItemStack product,
+                                     ItemStack unverifiedSeed, ResourceLocation seedTexture) {
+        forkTextured(id, name, soils, product, unverifiedSeed, seedTexture,
+                Collections.emptyList(), 0, 255);
     }
 
     private static void forkTextured(String id, String name, List<String> soils, ItemStack product, ItemStack unverifiedSeed,
                                       List<BiomeDictionary.Type> preferredBiomeTypes, int optimalElevationMin, int optimalElevationMax) {
+        forkTextured(id, name, soils, product, unverifiedSeed,
+                new ResourceLocation("agricrops:items/seed_" + id),
+                preferredBiomeTypes, optimalElevationMin, optimalElevationMax);
+    }
+
+    private static void forkTextured(String id, String name, List<String> soils, ItemStack product,
+                                     ItemStack unverifiedSeed, ResourceLocation seedTexture,
+                                     List<BiomeDictionary.Type> preferredBiomeTypes,
+                                     int optimalElevationMin, int optimalElevationMax) {
         register(new CodePlant(id, name, soils, 4, RenderMethod.CROSSED,
                 stage -> new ResourceLocation("agricrops:blocks/crop_" + id + (stage + 1)),
-                new ResourceLocation("agricrops:items/seed_" + id),
+                seedTexture,
                 Collections.singletonList(product), Collections.singletonList(unverifiedSeed),
                 preferredBiomeTypes, optimalElevationMin, optimalElevationMax));
     }

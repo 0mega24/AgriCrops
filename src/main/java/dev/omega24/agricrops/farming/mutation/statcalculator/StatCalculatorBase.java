@@ -3,6 +3,7 @@ package dev.omega24.agricrops.farming.mutation.statcalculator;
 import dev.omega24.agricrops.api.v1.AgriApi;
 import dev.omega24.agricrops.api.v1.adapter.IAgriAdapter;
 import dev.omega24.agricrops.api.v1.attribute.LockedAttributeInstance;
+import dev.omega24.agricrops.api.v1.species.CropSpecies;
 import dev.omega24.agricrops.api.v1.crop.IAgriCrop;
 import dev.omega24.agricrops.api.v1.mutation.IAgriMutation;
 import dev.omega24.agricrops.api.v1.plant.IAgriPlant;
@@ -19,14 +20,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAdapter<IAgriStatCalculator> {
 
     @Override
-    public IAgriStat calculateSpreadStats(IAgriPlant child, Collection<IAgriCrop> parents) {
+    public IAgriStat calculateSpreadStats(IAgriPlant child, Collection<IAgriCrop> parents, Random rand) {
         Objects.requireNonNull(child, "The child plant to calculate the stats for must not be null!");
         Objects.requireNonNull(parents, "The set of parents to calculate the child's stats from must not be null!");
-        return blend(parents, parentPlant -> Objects.equals(child, parentPlant), 1);
+        Objects.requireNonNull(rand, "The random source to calculate spread stats must not be null!");
+        return blend(parents, parentPlant -> Objects.equals(child, parentPlant), 1, rand);
     }
 
     @Override
@@ -34,7 +37,7 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
         Objects.requireNonNull(mutation, "The mutation to calculate the stats for must not be null!");
         Objects.requireNonNull(parents, "The set of parents to calculate the mutation result stats from must not be null!");
         Objects.requireNonNull(rand, "The random source to roll locked-attribute unlocks with must not be null!");
-        IAgriStat result = blend(parents, mutation::hasParent, AgriCraftConfig.cropStatDivisor);
+        IAgriStat result = blend(parents, mutation::hasParent, AgriCraftConfig.cropStatDivisor, rand);
         return rollLockedAttributes(mutation, parents, result, rand);
     }
 
@@ -56,6 +59,18 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
         IAgriStat statB = findGenomeOf(plantB, parents);
         List<LockedAttributeInstance> unlocked = AgriApi.getAttributeUnlockRegistry()
                 .rollCross(plantA.getId(), statA, plantB.getId(), statB, rand);
+        // An unlock rule cannot conjure storage on a child species that has no slot for it.
+        // Missing species definitions therefore fail closed instead of leaking traits.
+        final java.util.Optional<CropSpecies> childSpecies =
+                AgriApi.getSpeciesRegistry().get(mutation.getChild().getId());
+        if (!childSpecies.isPresent()) {
+            return result;
+        }
+        unlocked = unlocked.stream()
+                .filter(instance -> AgriApi.getAttributeRegistry().get(instance.getAttributeId())
+                        .map(childSpecies.get()::canUnlock)
+                        .orElse(false))
+                .collect(Collectors.toList());
         return result.withLockedAttributes(unlocked);
     }
 
@@ -77,7 +92,8 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
      * {@link #calculateStat(int, int, int)} independently — same shape as the old
      * growth/gain/strength blend, just generalized over the full {@link CropStat} set.
      */
-    private IAgriStat blend(Collection<IAgriCrop> parents, Predicate<IAgriPlant> isValidParentPlant, int divisor) {
+    private IAgriStat blend(Collection<IAgriCrop> parents, Predicate<IAgriPlant> isValidParentPlant,
+                            int divisor, Random rand) {
         int invalidParents = 0;
         int validParents = 0;
         final Map<CropStat, Integer> sums = new EnumMap<>(CropStat.class);
@@ -112,7 +128,7 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
         IAgriStat result = new PlantStats();
         for (CropStat stat : CropStat.values()) {
             final int mean = sums.get(stat) / meanDivisor;
-            result = result.with(stat, calculateStat(mean, validParents, divisor));
+            result = result.with(stat, calculateStat(mean, validParents, divisor, rand));
         }
         return result;
     }
@@ -120,7 +136,7 @@ public abstract class StatCalculatorBase implements IAgriStatCalculator, IAgriAd
     /**
      * calculates the new stats based on an input stat, the nr of neighbours and a divisor
      */
-    protected abstract int calculateStat(int input, int neighbours, int divisor);
+    protected abstract int calculateStat(int input, int neighbours, int divisor, Random rand);
 
     /**
      * Calculates the divisor to use for the mean operation on the stats of the parent plants.

@@ -152,8 +152,13 @@ public final class CoreHandler {
                 .map(Optional::get)
                 .forEach(AgriApi.getMutationRegistry()::add);
 
+        // The standalone jar ships a minimal playable breeding path. Pack-provided JSON and
+        // CraftTweaker definitions may add to it, but are not required to discover a hybrid.
+        DefaultMutations.register();
+
         // Display Mutations
-        AgriCore.getLogger("agricrops").info("Registered Mutations ({0}/{1}):", count, raw);
+        AgriCore.getLogger("agricrops").info("Registered Mutations ({0} built-in/resolved, {1}/{2} JSON valid):",
+                AgriApi.getMutationRegistry().all().size(), count, raw);
         for (IAgriMutation mutation : AgriApi.getMutationRegistry().all()) {
             AgriCore.getLogger("agricrops").info(" - {0}", mutation);
         }
