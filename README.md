@@ -1,19 +1,24 @@
 # Agricrops
 
 A new Java implementation of the crop genetics and field-management project for Minecraft
-Forge 1.12.2. This branch starts the replacement; it is not yet a playable farming release.
+Forge 1.12.2. An early wheat lifecycle now runs; this is not a finished farming release.
 
-## Current foundation
+## Current first slice
 
-- A minimal side-neutral Forge entry point and mod metadata.
+- Craftable crop sticks that accept vanilla wheat seeds, borrow native wheat models and retain
+  the specimen through harvest and recovered seeds.
+- Resource-paid active growth, light/soil checks, watering, fertilizer and localized inspection.
+- Position-owned saved water/nutrients, strict versioned specimen NBT and rejected-data retention.
+- Optional Java-backed CraftTweaker builders, explicit overrides and startup validation; a real
+  script override has been tested on a dedicated server.
 - An independent Java 8 `core` module with immutable standard genetic values, explicit seed
   origin categories and active-time biological phases independent from texture stages.
-- Unit tests for adaptation bounds, invalid templates, immutability and phase timing.
+- Tests for bounds, timing, resource conservation, persistence and native asset wiring.
 - One-worker build defaults and no external simulator, Node/npm, AgriCore or InfinityLib dependency.
 
-Crop blocks, persistence, inheritance/locked traits, resources/layers, CraftTweaker registration,
-imports, field tools and journal are still to be implemented. Existing concepts are requirements,
-not claims about this foundation.
+Inheritance/locked traits, breeding/clippings, deeper soil layers, full crop imports, field tools
+and journal are still to be implemented. Only wheat presentation is qualified by static checks;
+client visual QA remains open. See [the first-crop guide](docs/first-crop.md).
 
 ## Build
 

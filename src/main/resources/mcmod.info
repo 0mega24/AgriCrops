@@ -4,7 +4,7 @@
     "name": "Agricrops",
     "version": "${version}",
     "mcversion": "1.12.2",
-    "description": "A new crop genetics and field-management mod. Foundation build; gameplay is in development.",
+    "description": "A new crop genetics and field-management mod. Early wheat lifecycle with optional CraftTweaker authoring; breeding and broader imports are in development.",
     "authorList": ["omega24"],
     "url": "https://github.com/0mega24/AgriCrops",
     "credits": "Project history and acknowledgements are in NOTICE."

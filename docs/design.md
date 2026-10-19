@@ -38,5 +38,6 @@ The new standard-value domain currently implements the proposed 0..63 magnitude 
 directional ranges. It validates invalid authoring rather than silently clamping. Final balancing,
 locked-locus algorithms, devices and import catalogue still require reviewed concrete definitions.
 
-Next: complete the first vertical lifecycle—one vanilla-presented crop with resource-accounted
-growth, inspection, CraftTweaker lifecycle proof, and save/reload—before expanding breadth.
+The first wheat lifecycle now has headless server/CT/save evidence; see `first-crop.md` and
+`implementation-status.md`. Qualify client models, tooltip/reload behavior and the actual player
+break/pickup/replant loop before declaring that milestone complete or expanding content breadth.

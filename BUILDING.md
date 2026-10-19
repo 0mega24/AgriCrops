@@ -28,12 +28,13 @@ expensive prepared dependencies.
 
 Run one Minecraft process at a time after builds finish. JavaExec tasks are configured with a
 256 MiB initial / 1 GiB maximum heap. Use normal game exit or server `stop`; do not destroy
-native windows to terminate the client. Runtime startup and visual behavior are not established
-by compiling this scaffold. Follow the verification record in `docs/implementation-status.md`.
+native windows to terminate the client. Compiling does not establish runtime or visual behavior.
+Follow `docs/implementation-status.md`; headless crop checks are recorded separately.
 
-The old dev world's EULA acceptance/configs remain in the local archive and are not copied into
-the new runtime. The owner accepted Minecraft's EULA in this conversation; complete the actual
-development server setup deliberately when runtime testing is resumed. Never open an old
+The old dev world/configs remain in the local archive and are not copied into the new runtime.
+The owner accepted Minecraft's EULA in this conversation. A new ignored development instance
+was configured under `run/`, binding only `127.0.0.1:25575` with a new `first-slice-dev` flat world.
+Its offline mode is for local testing only, not a public-server recommendation. Never open an old
 Agricrops world with this new implementation as a migration test without an expendable copy.
 
 On NixOS, `nix-shell` supplies Java/native libraries; the host also needs suitable graphics/audio.
@@ -48,3 +49,24 @@ it does not run a GUI or accept EULAs.
 Local archived generated Minecraft dependencies can be reused for bounded verification; record
 that fact separately from clean-checkout CI qualification. Old mod classes/resources must never
 be copied into new outputs. `docs/archive.md` identifies the preserved local material.
+
+## CraftTweaker and acceptance fixture
+
+CraftTweaker is compile-only and optional for players. Add `-PwithCraftTweaker` to a development
+launch to include pinned CT `1.12-4.1.20.715`. Put scripts in `run/scripts/` and restart; see
+`examples/scripts/first_crop.zs`. The ignored acceptance instance currently overrides wheat to
+600 ticks per phase (2400 total); the built-in and checked-in example use 1200 (4800 total).
+
+An opt-in operator fixture is available with `-PdevChecks`:
+
+```sh
+./gradlew --offline runServer --args=nogui -PdevChecks -PwithCraftTweaker -x compilePatchedMcJava -x processPatchedMcResources -x packagePatchedMc --no-daemon --max-workers=1 --console=plain
+```
+
+Use only a disposable world. `agricrops definitions` shows the resolved timing. Set daylight,
+then `agricrops verify <x> <y> <z>` requires three empty loaded positions (target, below, below-east),
+places a small watered field and exercises planting, accelerated paid development, harvest,
+NBT/drop/replant paths, care items and regrowth. It leaves the test field in place. The command
+does not wait out natural growth, test a real player breaking the block or prove client visuals.
+After `save-all`, `stop`, and restart, `agricrops saved <x> <y> <z>` checks persisted progress and
+depletion. The ordinary inspection/definitions commands do not need the fixture launch flag.

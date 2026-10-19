@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["S S","SSS"],
+  "key":{"S":{"item":"minecraft:stick"}},
+  "result":{"item":"agricrops:crop_sticks", "count":4}
+}

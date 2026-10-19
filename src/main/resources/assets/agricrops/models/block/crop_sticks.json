@@ -1,0 +1,9 @@
+{
+  "parent": "block/block",
+  "textures": {"wood": "minecraft:blocks/planks_oak", "particle": "minecraft:blocks/planks_oak"},
+  "elements": [
+    {"from": [2, 0, 2], "to": [3, 14, 3], "faces": {"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from": [13, 0, 2], "to": [14, 14, 3], "faces": {"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from": [2, 10, 2], "to": [14, 11, 3], "faces": {"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}}
+  ]
+}

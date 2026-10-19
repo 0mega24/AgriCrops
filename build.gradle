@@ -21,10 +21,19 @@ minecraft {
     username = 'Developer'
 }
 
-repositories { mavenCentral() }
+repositories {
+    maven { url = 'https://maven.blamejared.com' }
+    mavenCentral()
+}
 
 dependencies {
     implementation project(':core')
+    compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.715'
+    testImplementation 'junit:junit:4.13.2'
+    // Opt in for deliberate development runtime checks; absent in the base installation.
+    if (providers.gradleProperty('withCraftTweaker').isPresent()) {
+        runtimeOnly rfg.deobf('CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.715')
+    }
 }
 
 // Keep the rule module available inside the distributed mod, not as another required mod jar.
@@ -50,4 +59,5 @@ tasks.withType(Test).configureEach {
 tasks.withType(JavaExec).configureEach {
     minHeapSize = '256m'
     maxHeapSize = '1G'
+    if (providers.gradleProperty('devChecks').isPresent()) systemProperty 'agricrops.devChecks', 'true'
 }
