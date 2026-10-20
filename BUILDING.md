@@ -63,12 +63,28 @@ An opt-in operator fixture is available with `-PdevChecks`:
 ./gradlew --offline runServer --args=nogui -PdevChecks -PwithCraftTweaker -x compilePatchedMcJava -x processPatchedMcResources -x packagePatchedMc --no-daemon --max-workers=1 --console=plain
 ```
 
-Use only a disposable world. `agricrops definitions` shows the resolved timing. Set daylight,
-then `agricrops verify <x> <y> <z>` requires three empty loaded positions (target, below, below-east),
-places a small watered field and exercises planting, accelerated paid development, harvest,
-NBT/drop/replant paths, care items and regrowth. It leaves the test field in place. The command
-also checks the configured numeric regrowth stage, rewound stored age and post-harvest NBT.
-Use a temporary `.regrowFrom(4)` override to exercise intermediate regrowth. It does not wait
-out natural growth, test a real player breaking the block or prove client visuals.
-After `save-all`, `stop`, and restart, `agricrops saved <x> <y> <z>` checks persisted progress and
-depletion. The ordinary inspection/definitions commands do not need the fixture launch flag.
+Use only a disposable world. The current fixture is `agricrops poc <x> <y> <z>`; legacy
+`verify/saved` are retired. It first checks a bounded set of air positions, then creates eight
+three-layer beds, lamps and a finite reservoir. Allow 15 blocks east and two blocks above the
+chosen origin, plus three below. All positions must already be loaded. `agricrops pocSpawn`
+chooses the existing spawn's X/Z at Y90 for a fresh world; it does not force-load farm chunks.
+It leaves fixture blocks in place and intentionally accelerates normal paid intervals.
+
+It checks recipes, native planting/harvest, actual parent stage windows, mixed native drops,
+three stabilising generations, fresh recovery, clipping/rooting, real soil debits, tools, fluid
+capabilities and persistence. With `examples/scripts/poc_ecology.zs` installed, it also checks
+the gated native NBT import and custom factor. `agricrops assets` reports all presentation
+fallbacks; `definitions` reports resolved timing. No command establishes client visuals.
+
+After `save-all`, `stop` and restart with the same scripts/world, use
+`agricrops pocSaved <original-x> <y> <original-z>` (or `pocSavedSpawn` for the original spawn
+fixture). Evidence is one record per disposable world; a new successful fixture supersedes it.
+Use `--args='nogui --world poc-base-v1'` without `-PwithCraftTweaker` for a separate base-only
+qualification, never open the scripted import world with missing definitions accidentally.
+The ignored working instance currently uses `poc-dev-v3`; old first-slice/archived worlds remain
+untouched. All ordinary diagnostics still require operator permission; fixtures also require
+the deliberate JVM development flag. Build/test never starts Minecraft automatically.
+
+An intentionally failing script can make Minecraft refuse startup while Gradle still returns
+success. Check for `Done`, definition errors and fixture markers, not just process exit status.
+See `docs/poc-acceptance.md` and `docs/poc-gameplay.md` for exact current limits.

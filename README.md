@@ -1,24 +1,28 @@
 # Agricrops
 
 A new Java implementation of the crop genetics and field-management project for Minecraft
-Forge 1.12.2. An early wheat lifecycle now runs; this is not a finished farming release.
+Forge 1.12.2. A small-content farming/genetics POC now runs; this is not a balanced release.
 
-## Current first slice
+## Current POC
 
-- Craftable crop sticks that accept vanilla wheat seeds, borrow native wheat models and retain
-  the specimen through harvest and recovered seeds.
-- Resource-paid active growth, light/soil checks, watering, fertilizer and localized inspection.
-- Position-owned saved water/nutrients, strict versioned specimen NBT and rejected-data retention.
+- Wheat, beetroot and carrot; native art, numeric harvest reset and retained specimens.
+- Environmental response, three position-owned soil layers, compost and finite supplied irrigation.
+- Paid stage-window breeding, bounded mixed-parent drops, regression, competing/fixed traits,
+  fresh-line recovery, seedling clippings/rooting and distinct acquisition origins.
+- In-game probe, paid analyser and discovery-aware field journal (chat presentation for the POC).
+- Versioned genes/composition/traits/ancestry and production funding, with rejected-data retention.
 - Optional Java-backed CraftTweaker builders, explicit overrides and startup validation; a real
   script override has been tested on a dedicated server.
 - An independent Java 8 `core` module with immutable standard genetic values, explicit seed
   origin categories and active-time biological phases independent from texture stages.
-- Tests for bounds, timing, resource conservation, persistence and native asset wiring.
+- Explicit native item metadata/NBT imports, fallback visual profiles and shared CT ecological rules.
+- Tests for bounds, timing, conservation, inheritance/recovery, persistence and native asset wiring.
 - One-worker build defaults and no external simulator, Node/npm, AgriCore or InfinityLib dependency.
 
-Inheritance/locked traits, breeding/clippings, deeper soil layers, full crop imports, field tools
-and journal are still to be implemented. Only wheat presentation is qualified by static checks;
-client visual QA remains open. See [the first-crop guide](docs/first-crop.md).
+See [POC gameplay/configuration](docs/poc-gameplay.md) and [acceptance evidence](docs/poc-acceptance.md).
+Client visual/manual QA, polished tool UI, survival balance, broad defaults and actual Pam/Mystical
+Agriculture version qualification remain separate work; generic import support is not an automatic
+catalogue or imitation of every source mod's mechanics.
 
 ## Build
 

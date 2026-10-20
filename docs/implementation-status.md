@@ -1,5 +1,51 @@
 # New implementation status
 
+## Current checkpoint — 2026-10-20 small-content POC
+
+The first-crop-only checkpoint below is now **historical**. This POC extends `933a60aa` on main;
+the archive and baseline history are unchanged. Publication refs are recorded in Git and the
+Agricrops vault status note. Current guide:
+`poc-gameplay.md`. Detailed evidence and remaining qualification: `poc-acceptance.md`.
+
+- Three vanilla-backed parent crops; eight consumed genes, source-labelled environmental
+  responses, real three-cell root zones, distinct role phases and paid propagation.
+- Bounded mixed existing-parent products, persisted allocation/funding, numeric regrowth,
+  regression, competing/fixed trait paths and fresh-line backcross recovery.
+- Native/crafted/bred/clipping origins, paid seedling clipping/rooting and retained generic
+  carriers that do not transfer prepaid production or soil inventories.
+- Manual care, compost release, bounded passive/rain intake and finite supplied field reservoirs
+  with water-only Forge fluid capability, fair round-robin targets and persisted source stocks.
+- Probe, paper-paid analyser, player discoveries and localized chat field journal; ordinary
+  tooltips and crop update packets do not print/sync the hidden genome.
+- Shared Java/actual CT crop/environment/soil/trait definitions, metadata/NBT native imports,
+  explicit hybrid permissions and known native fallback profiles. `/agricrops assets` reports
+  required presentation: zero mandatory new PNGs for this POC.
+- Strict schema-2 specimen/soil migration and quarantine, including rejected reservoir retention.
+
+Latest complete suite: **61 tests** (43 core, 14 persistence, 4 static resource wiring), zero
+failures/errors. Local dev/reobfuscated artifacts build using the same bounded cached Forge
+dependency exclusions documented below; clean preparation/remote CI remain separate.
+
+Real base-only (five mods) and CT (six mods, pinned 1.12-4.1.20.715) disposable-world action and
+disk-restart checks pass. The fixture uses real recipes, handlers, source writes, adjacent plots,
+three stabilising generations, paid recovery, native outputs, clipping/rooting and finite fluid
+storage. CT also qualifies a tagged native item import and an authored factor. A deliberately
+invalid requirement refuses startup with the source file/line before opening a world; the
+temporary failing script was removed and a valid ready/action run restored. See acceptance log.
+
+This is a **small functional POC**, not a finished farming release or performance qualification.
+No graphical client was launched. Manual visuals/full player break-pickup/reconnect, readable
+tool UI/pagination, survival balance, cancelled external events and long-run large farms remain
+open. Actual Pam/MA versions/catalogues/special mechanics, real pollution/season addons, hopper
+item supply and broad automation/content are not implied by generic extension points.
+All game processes are deliberately serialized, capped at 1 GiB and normally stopped; no claim
+is made that the earlier host kernel-panic cause is diagnosed.
+
+## Historical first-crop checkpoint — 2026-10-19
+
+The following records describe the prior slice only, including its then-missing behavior and
+old resource defaults. Use the POC guide/acceptance checklist for current behavior.
+
 Updated: 2026-10-19. Archive: `75d6f7baa52251ae7260156b4c23a0a4a9357dbb` on
 `codex/archive-agricrops-fork-2026-10-19`.
 

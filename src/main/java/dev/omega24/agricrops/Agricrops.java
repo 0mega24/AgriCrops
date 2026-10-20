@@ -18,6 +18,7 @@ public final class Agricrops {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         GameRegistry.registerTileEntity(CropTile.class, new ResourceLocation(MOD_ID, "crop_sticks"));
+        GameRegistry.registerTileEntity(dev.omega24.agricrops.world.ReservoirTile.class, new ResourceLocation(MOD_ID, "reservoir"));
         event.getModLog().info("Agricrops: collecting Java/CraftTweaker crop definitions.");
     }
 

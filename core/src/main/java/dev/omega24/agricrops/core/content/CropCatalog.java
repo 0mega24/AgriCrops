@@ -25,7 +25,7 @@ public final class CropCatalog {
         if (frozen) throw new IllegalStateException("Definitions already frozen");
         Set<String> seeds = new HashSet<>();
         for (CropDefinition definition : pending.values()) {
-            if (!seeds.add(definition.seed())) throw new IllegalArgumentException("Ambiguous seed " + definition.seed());
+            if (!seeds.add(definition.seed() + "@" + definition.rules().seedMeta)) throw new IllegalArgumentException("Ambiguous seed item/metadata " + definition.seed());
         }
         frozen = true;
         return Collections.unmodifiableMap(new LinkedHashMap<>(pending));

@@ -1,5 +1,9 @@
 # First crop slice
 
+Historical first-slice guide (2026-10-19). The current implementation is described in
+`poc-gameplay.md`; production budgets, soil defaults, water units and retained-seed carriers have
+changed. Do not use the old values below as current configuration documentation.
+
 This is an early wheat lifecycle, not the full genetics mod. Use a new disposable world.
 
 ## Player loop

@@ -19,7 +19,7 @@ public class ResourceWiringTest {
     }
     @Test public void allWheatStagesResolveToExistingNativeModelsAndTextures() throws Exception {
         JsonArray parts = json("/assets/agricrops/blockstates/crop_sticks.json").getAsJsonArray("multipart");
-        assertEquals(9, parts.size());
+        assertEquals(17, parts.size());
         for (int age = 0; age < 8; age++) {
             JsonObject part = parts.get(age + 1).getAsJsonObject();
             assertEquals(Integer.toString(age), part.getAsJsonObject("when").get("age").getAsString());
@@ -39,5 +39,28 @@ public class ResourceWiringTest {
                 .getAsJsonObject("textures").get("layer0").getAsString());
         assertNotNull(getClass().getResource("/assets/minecraft/textures/blocks/planks_oak.png"));
         assertNotNull(getClass().getResource("/assets/minecraft/textures/items/stick.png"));
+    }
+    @Test public void borrowedBeetrootCarrotAndAllItemFallbacksExist() throws Exception {
+        JsonArray parts = json("/assets/agricrops/blockstates/crop_sticks.json").getAsJsonArray("multipart");
+        for (int i = 9; i < parts.size(); i++) {
+            JsonObject part = parts.get(i).getAsJsonObject(); String model = part.getAsJsonObject("apply").get("model").getAsString().substring("minecraft:".length());
+            JsonObject nativeModel = json("/assets/minecraft/models/block/" + model + ".json"); String texture = nativeModel.getAsJsonObject("textures").get("crop").getAsString();
+            assertNotNull(getClass().getResource("/assets/minecraft/textures/" + texture + ".png"));
+        }
+        for (String item : new String[]{"specimen_seed", "clipping", "foundation_seed", "compost", "probe", "analyzer", "journal"}) {
+            String parent = json("/assets/agricrops/models/item/" + item + ".json").get("parent").getAsString();
+            json("/assets/minecraft/models/" + parent.substring("minecraft:".length()) + ".json");
+        }
+    }
+    @Test public void everyNativeProfileCoversEveryNumericStageExactlyOnce() throws Exception {
+        JsonArray parts = json("/assets/agricrops/blockstates/crop_sticks.json").getAsJsonArray("multipart");
+        for (String profile : new String[]{"wheat", "beetroot", "carrot"}) for (int age = 0; age < 8; age++) {
+            int count = 0;
+            for (int i = 1; i < parts.size(); i++) {
+                JsonObject when = parts.get(i).getAsJsonObject().getAsJsonObject("when");
+                if (when.get("crop").getAsString().equals(profile) && java.util.Arrays.asList(when.get("age").getAsString().split("\\|")).contains(Integer.toString(age))) count++;
+            }
+            assertEquals(profile + " age " + age, 1, count);
+        }
     }
 }

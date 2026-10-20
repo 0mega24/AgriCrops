@@ -1,13 +1,21 @@
 {
   "multipart": [
     {"apply": {"model": "agricrops:crop_sticks"}},
-    {"when": {"planted":"true", "age":"0"}, "apply":{"model":"minecraft:wheat_stage0"}},
-    {"when": {"planted":"true", "age":"1"}, "apply":{"model":"minecraft:wheat_stage1"}},
-    {"when": {"planted":"true", "age":"2"}, "apply":{"model":"minecraft:wheat_stage2"}},
-    {"when": {"planted":"true", "age":"3"}, "apply":{"model":"minecraft:wheat_stage3"}},
-    {"when": {"planted":"true", "age":"4"}, "apply":{"model":"minecraft:wheat_stage4"}},
-    {"when": {"planted":"true", "age":"5"}, "apply":{"model":"minecraft:wheat_stage5"}},
-    {"when": {"planted":"true", "age":"6"}, "apply":{"model":"minecraft:wheat_stage6"}},
-    {"when": {"planted":"true", "age":"7"}, "apply":{"model":"minecraft:wheat_stage7"}}
+    {"when": {"planted":"true", "crop":"wheat", "age":"0"}, "apply":{"model":"minecraft:wheat_stage0"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"1"}, "apply":{"model":"minecraft:wheat_stage1"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"2"}, "apply":{"model":"minecraft:wheat_stage2"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"3"}, "apply":{"model":"minecraft:wheat_stage3"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"4"}, "apply":{"model":"minecraft:wheat_stage4"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"5"}, "apply":{"model":"minecraft:wheat_stage5"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"6"}, "apply":{"model":"minecraft:wheat_stage6"}},
+    {"when": {"planted":"true", "crop":"wheat", "age":"7"}, "apply":{"model":"minecraft:wheat_stage7"}},
+    {"when": {"planted":"true", "crop":"beetroot", "age":"0|1"}, "apply":{"model":"minecraft:beetroots_stage0"}},
+    {"when": {"planted":"true", "crop":"beetroot", "age":"2|3"}, "apply":{"model":"minecraft:beetroots_stage1"}},
+    {"when": {"planted":"true", "crop":"beetroot", "age":"4|5|6"}, "apply":{"model":"minecraft:beetroots_stage2"}},
+    {"when": {"planted":"true", "crop":"beetroot", "age":"7"}, "apply":{"model":"minecraft:beetroots_stage3"}},
+    {"when": {"planted":"true", "crop":"carrot", "age":"0|1"}, "apply":{"model":"minecraft:carrots_stage0"}},
+    {"when": {"planted":"true", "crop":"carrot", "age":"2|3"}, "apply":{"model":"minecraft:carrots_stage1"}},
+    {"when": {"planted":"true", "crop":"carrot", "age":"4|5|6"}, "apply":{"model":"minecraft:carrots_stage2"}},
+    {"when": {"planted":"true", "crop":"carrot", "age":"7"}, "apply":{"model":"minecraft:carrots_stage3"}}
   ]
 }

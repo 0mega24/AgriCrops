@@ -1,9 +1,12 @@
 package dev.omega24.agricrops.world;
 
 import dev.omega24.agricrops.content.CropDefinitions;
+import dev.omega24.agricrops.content.GameContent;
+import dev.omega24.agricrops.content.SpecimenItems;
 import dev.omega24.agricrops.core.content.CropDefinition;
 import dev.omega24.agricrops.core.field.CropState;
 import dev.omega24.agricrops.core.genetics.SeedOrigin;
+import dev.omega24.agricrops.core.genetics.Specimen;
 import dev.omega24.agricrops.persistence.CropNbt;
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
@@ -32,6 +35,11 @@ import javax.annotation.Nullable;
 
 public final class CropSticksBlock extends net.minecraft.block.BlockCrops implements ITileEntityProvider {
     public static final PropertyBool PLANTED = PropertyBool.create("planted");
+    public enum Visual implements net.minecraft.util.IStringSerializable {
+        WHEAT, BEETROOT, CARROT;
+        public String getName() { return name().toLowerCase(java.util.Locale.ROOT); }
+    }
+    public static final net.minecraft.block.properties.PropertyEnum<Visual> VISUAL = net.minecraft.block.properties.PropertyEnum.create("crop", Visual.class);
     private static final AxisAlignedBB BOX = new AxisAlignedBB(0.0625, 0, 0.0625, 0.9375, 0.875, 0.9375);
 
     public CropSticksBlock() {
@@ -39,10 +47,15 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
         setTickRandomly(false);
         setRegistryName("agricrops", "crop_sticks"); setUnlocalizedName("agricrops.crop_sticks");
         setHardness(0.5F); setSoundType(SoundType.WOOD); setCreativeTab(CreativeTabs.DECORATIONS);
-        setDefaultState(blockState.getBaseState().withProperty(AGE, 0).withProperty(PLANTED, false));
+        setDefaultState(blockState.getBaseState().withProperty(AGE, 0).withProperty(PLANTED, false).withProperty(VISUAL, Visual.WHEAT));
     }
 
-    @Override protected BlockStateContainer createBlockState() { return new BlockStateContainer(this, AGE, PLANTED); }
+    @Override protected BlockStateContainer createBlockState() { return new BlockStateContainer(this, AGE, PLANTED, VISUAL); }
+    @Override public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+        TileEntity tile = world.getTileEntity(pos);
+        if (tile instanceof CropTile) try { return state.withProperty(VISUAL, Visual.valueOf(((CropTile) tile).visual().toUpperCase(java.util.Locale.ROOT))); } catch (IllegalArgumentException ignored) { }
+        return state;
+    }
     @Override public IBlockState getStateFromMeta(int meta) { return getDefaultState().withProperty(AGE, meta & 7).withProperty(PLANTED, (meta & 8) != 0); }
     @Override public int getMetaFromState(IBlockState state) { return state.getValue(AGE) | (state.getValue(PLANTED) ? 8 : 0); }
     @Override public TileEntity createNewTileEntity(World world, int meta) { return new CropTile(); }
@@ -90,24 +103,49 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
         if (!(entity instanceof CropTile) || !player.canPlayerEdit(pos, facing, player.getHeldItem(hand))) return false;
         CropTile tile = (CropTile) entity;
         ItemStack held = player.getHeldItem(hand);
+        if (held.getItem() == GameContent.JOURNAL) { FieldNotes.journal(player); return true; }
+        if (held.getItem() == GameContent.PROBE) { FieldNotes.probe(player, tile); return true; }
+        if (held.getItem() == GameContent.ANALYZER) { FieldNotes.analyse(player, tile); return true; }
+        if (tile.crop() == null && held.getItem() == Item.getItemFromBlock(this) && !tile.crossing() && !tile.quarantined()) {
+            tile.enableCrossing(false); if (!player.capabilities.isCreativeMode) held.shrink(1); player.sendMessage(tile.inspection()); return true;
+        }
+        if (tile.crop() == null && tile.crossing() && player.isSneaking() && held.getItem() == Items.DYE && held.getMetadata() == 15) {
+            tile.enableCrossing(!tile.backcross()); player.sendMessage(tile.inspection()); return true;
+        }
         if (tile.quarantined() || player.isSneaking() || held.getItem() == Items.STICK) {
             player.sendMessage(tile.inspection()); return true;
         }
+        if (held.getItem() == Items.SHEARS) {
+            Specimen clipping = tile.clip(); if (clipping != null) { give(player, SpecimenItems.of(clipping)); if (!player.capabilities.isCreativeMode) held.damageItem(1, player); }
+            else player.sendMessage(new TextComponentTranslation("agricrops.clip.wait")); return true;
+        }
+        if (held.getItem() == GameContent.COMPOST) {
+            if (tile.compost() && !player.capabilities.isCreativeMode) held.shrink(1); player.sendMessage(tile.inspection()); return true;
+        }
         if (held.getItem() == Items.WATER_BUCKET) {
-            if (tile.soil().water() == dev.omega24.agricrops.core.field.SoilCell.CAPACITY) return true;
-            tile.addResources(2000, 0);
+            dev.omega24.agricrops.core.field.SoilProfile profile = dev.omega24.agricrops.content.PocContent.soils().get(tile.soil().block());
+            if (profile == null || tile.soil().water() >= profile.waterCapacity) return true;
+            tile.addResources(1000, 0);
             if (!player.capabilities.isCreativeMode) player.setHeldItem(hand, new ItemStack(Items.BUCKET));
             player.sendMessage(tile.inspection()); return true;
         }
+        if (tile.crop() == null && (held.getItem() == GameContent.SPECIMEN || held.getItem() == GameContent.CLIPPING || held.getItem() == GameContent.FOUNDATION)) {
+            try {
+                Specimen specimen = held.getItem() == GameContent.FOUNDATION ? Specimen.fresh(CropDefinitions.get("agricrops:wheat"), SeedOrigin.CRAFTED, world.rand.nextLong()) : SpecimenItems.read(held);
+                if (!tile.soil().block().equals(CropDefinitions.get(specimen.body).soil())) { player.sendMessage(new TextComponentTranslation("agricrops.plant.soil")); return true; }
+                tile.plant(CropState.plant(specimen, 0)); if (!player.capabilities.isCreativeMode) held.shrink(1);
+            } catch (RuntimeException exception) { player.sendMessage(new TextComponentTranslation("agricrops.seed.invalid")); }
+            return true;
+        }
         if (held.getItem() == Items.DYE && held.getMetadata() == 15) {
-            if (tile.soil().nutrients() == dev.omega24.agricrops.core.field.SoilCell.CAPACITY) return true;
+            dev.omega24.agricrops.core.field.SoilProfile profile = dev.omega24.agricrops.content.PocContent.soils().get(tile.soil().block());
+            if (profile == null || tile.soil().nutrients() >= profile.nutrientCapacity) return true;
             tile.addResources(0, 2000);
             if (!player.capabilities.isCreativeMode) held.shrink(1);
             player.sendMessage(tile.inspection()); return true;
         }
-        if (tile.crop() == null && !held.isEmpty() && held.getMetadata() == 0) {
-            String item = held.getItem().getRegistryName().toString();
-            for (CropDefinition definition : CropDefinitions.all().values()) if (definition.seed().equals(item)) {
+        if (tile.crop() == null && !held.isEmpty()) {
+            for (CropDefinition definition : CropDefinitions.all().values()) if (dev.omega24.agricrops.content.NativeItems.seed(definition, held)) {
                 if (!tile.soil().block().equals(definition.soil())) {
                     player.sendMessage(new TextComponentTranslation("agricrops.plant.soil")); return true;
                 }
@@ -116,7 +154,7 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
                     if (held.hasTagCompound() && held.getTagCompound().hasKey(CropNbt.ITEM_KEY)) {
                         seed = CropNbt.read(held.getTagCompound().getCompoundTag(CropNbt.ITEM_KEY));
                         if (!seed.crop().equals(definition.id())) throw new IllegalArgumentException("Specimen/item mismatch");
-                    } else seed = CropState.fresh(definition, SeedOrigin.WILD);
+                    } else seed = CropState.plant(Specimen.fresh(definition, definition.seed().startsWith("minecraft:") ? SeedOrigin.WILD : SeedOrigin.IMPORTED, world.rand.nextLong()), 0);
                     tile.plant(seed);
                     if (!player.capabilities.isCreativeMode) held.shrink(1);
                 } catch (RuntimeException exception) {
@@ -126,11 +164,9 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
             }
         }
         if (tile.crop() != null && held.isEmpty()) {
-            CropDefinition definition = CropDefinitions.get(tile.crop().crop());
-            int count = tile.harvest();
-            if (count > 0) {
-                ItemStack product = new ItemStack(Item.REGISTRY.getObject(new ResourceLocation(definition.product())), count);
-                if (!player.inventory.addItemStackToInventory(product)) player.dropItem(product, false);
+            java.util.Map<String, Integer> products = tile.harvestProducts();
+            if (!products.isEmpty()) {
+                products.forEach((id, count) -> give(player, dev.omega24.agricrops.content.NativeItems.product(CropDefinitions.get(id), count)));
                 return true;
             }
         }
@@ -155,10 +191,7 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
                 NBTTagCompound blockEntity = new NBTTagCompound(); blockEntity.setTag(CropTile.DATA_KEY, tile.data());
                 NBTTagCompound item = new NBTTagCompound(); item.setTag("BlockEntityTag", blockEntity); sticks.setTagCompound(item);
             } else if (tile.crop() != null) {
-                CropDefinition definition = CropDefinitions.get(tile.crop().crop());
-                ItemStack seed = new ItemStack(Item.REGISTRY.getObject(new ResourceLocation(definition.seed())));
-                NBTTagCompound tag = new NBTTagCompound(); tag.setTag(CropNbt.ITEM_KEY, CropNbt.write(tile.crop().at(0))); seed.setTagCompound(tag);
-                drops.add(seed);
+                drops.add(SpecimenItems.of(tile.crop().specimen()));
             }
         }
         drops.add(sticks);
@@ -167,4 +200,5 @@ public final class CropSticksBlock extends net.minecraft.block.BlockCrops implem
     @Override public void breakBlock(World world, BlockPos pos, IBlockState state) {
         super.breakBlock(world, pos, state); world.removeTileEntity(pos);
     }
+    private static void give(EntityPlayer player, ItemStack stack) { if (!player.inventory.addItemStackToInventory(stack)) player.dropItem(stack, false); }
 }

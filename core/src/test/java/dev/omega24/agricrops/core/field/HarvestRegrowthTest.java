@@ -23,8 +23,10 @@ public class HarvestRegrowthTest {
                 "pack.crop.berry", timeline(), StandardGenome.neutral(), 1, 1, 9, 15, target);
     }
     private CropState mature(CropDefinition crop) {
-        return new CropState(crop.id(), StandardGenome.neutral().with(StandardStat.RESILIENCE, 31),
-                SeedOrigin.BRED, crop.timeline().totalTicks());
+        CropState state = new CropState(crop.id(), StandardGenome.neutral().with(StandardStat.RESILIENCE, 31), SeedOrigin.BRED, 0);
+        SoilCell soil = new SoilCell(crop.soil(), 10000, 10000);
+        for (int i = 0; i < 20 && !state.funded(); i++) { CropActions.Step step = CropActions.step(crop, state, soil, 15); state = step.crop; soil = step.soil; }
+        assertTrue("Mature helper must earn its production", state.funded()); return state;
     }
     @Test public void omittedRegrowthUsesNumericStageOne() {
         GrowthTimeline custom = new GrowthTimeline(Arrays.asList(new GrowthTimeline.Segment(GrowthPhase.VEGETATIVE, 40)));
@@ -46,13 +48,13 @@ public class HarvestRegrowthTest {
             assertEquals(0, CropActions.harvest(crop, harvest.crop).count);
         }
     }
-    @Test public void intermediateRegrowthStillRequiresPaidRemainingDevelopment() {
+    @Test public void intermediateRegrowthStillRequiresTheFullPaidProductionBudget() {
         CropDefinition crop = crop(5);
         CropState state = CropActions.harvest(crop, mature(crop)).crop;
         CropActions.Step dry = CropActions.step(crop, state, new SoilCell(crop.soil(), 0, 57), 15);
         assertEquals(CropActions.Reason.WATER, dry.reason); assertSame(state, dry.crop);
         assertEquals(0, CropActions.harvest(crop, dry.crop).count);
-        SoilCell soil = new SoilCell(crop.soil(), 57, 57);
+        SoilCell soil = new SoilCell(crop.soil(), 200, 200);
         for (int i = 0; i < 4; i++) {
             CropActions.Step step = CropActions.step(crop, state, soil, 15); state = step.crop; soil = step.soil;
         }

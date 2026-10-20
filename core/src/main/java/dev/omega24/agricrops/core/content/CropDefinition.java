@@ -14,6 +14,7 @@ public final class CropDefinition {
     private final int regrowthStage;
     private final long regrowthTicks;
     private final int waterCost, nutrientCost, minLight, maxLight;
+    private final PlantRules rules;
 
     public CropDefinition(String id, String seed, String product, String soil, String nameKey,
                           GrowthTimeline timeline, StandardGenome baseline,
@@ -25,6 +26,12 @@ public final class CropDefinition {
     public CropDefinition(String id, String seed, String product, String soil, String nameKey,
                           GrowthTimeline timeline, StandardGenome baseline,
                           int waterCost, int nutrientCost, int minLight, int maxLight, int regrowthStage) {
+        this(id, seed, product, soil, nameKey, timeline, baseline, waterCost, nutrientCost, minLight, maxLight, regrowthStage, PlantRules.builder().build());
+    }
+
+    private CropDefinition(String id, String seed, String product, String soil, String nameKey,
+                          GrowthTimeline timeline, StandardGenome baseline, int waterCost, int nutrientCost,
+                          int minLight, int maxLight, int regrowthStage, PlantRules rules) {
         this.id = identifier(id);
         this.seed = identifier(seed);
         this.product = identifier(product);
@@ -54,6 +61,7 @@ public final class CropDefinition {
         this.nutrientCost = nutrientCost;
         this.minLight = minLight;
         this.maxLight = maxLight;
+        this.rules = Objects.requireNonNull(rules);
     }
 
     public static String identifier(String id) {
@@ -81,4 +89,8 @@ public final class CropDefinition {
     public int nutrientCost() { return nutrientCost; }
     public int minLight() { return minLight; }
     public int maxLight() { return maxLight; }
+    public PlantRules rules() { return rules; }
+    public CropDefinition withRules(PlantRules rules) {
+        return new CropDefinition(id, seed, product, soil, nameKey, timeline, baseline, waterCost, nutrientCost, minLight, maxLight, regrowthStage, rules);
+    }
 }

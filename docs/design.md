@@ -34,10 +34,11 @@ contract from the prototype's old comments. The technical summary here preserves
 8. Source/API presence is not completion. Require tests at the actual breeding/world/action path,
    and separate build, dedicated-server and manual client evidence.
 
-The new standard-value domain currently implements the proposed 0..63 magnitude and −63..63
-directional ranges. It validates invalid authoring rather than silently clamping. Final balancing,
-locked-locus algorithms, devices and import catalogue still require reviewed concrete definitions.
+The standard-value domain implements 0..63 magnitude and −63..63 directional ranges. It validates
+invalid authoring rather than silently clamping. The small-content POC now has concrete inherited
+loci/fixation/recovery, finite supply, real layers, in-game tools and generic native imports.
+These are provisional gameplay policies, not final balance or a qualified external-mod catalogue.
 
-The first wheat lifecycle now has headless server/CT/save evidence; see `first-crop.md` and
-`implementation-status.md`. Qualify client models, tooltip/reload behavior and the actual player
-break/pickup/replant loop before declaring that milestone complete or expanding content breadth.
+Current mechanics and proof: `poc-gameplay.md`, `poc-acceptance.md`, `implementation-status.md`.
+`first-crop.md` is historical. Qualify client models, tooltip/reload behavior and the actual player
+break/pickup/replant loop before expanding content breadth or claiming full release acceptance.
